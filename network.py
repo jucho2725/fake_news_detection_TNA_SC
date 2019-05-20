@@ -29,7 +29,7 @@ from tensorflow.python.data import Dataset
 class Processing():
     def __init__(self):
         tag_map = defaultdict(lambda : wn.NOUN)
-        print(tag_map)
+        # print(tag_map)
         tag_map['J'] = wn.ADJ
         tag_map['V'] = wn.VERB
         tag_map['R'] = wn.ADV
@@ -43,7 +43,7 @@ class Processing():
         lemma_function = WordNetLemmatizer()
         for token in tokens:
             lemma = lemma_function.lemmatize(token)
-            print(token, "=>", lemma)
+            # print(token, "=>", lemma)
             results.append(lemma)
         return results
 
@@ -69,7 +69,7 @@ class Processing():
                     wordsFiltered.append(w)
             results.append(wordsFiltered)
 
-        print(results)
+        # print(results)
         return results
 
     # 태깅 함수
@@ -129,17 +129,22 @@ class Processing():
                     word_cooc_mat[(w1, w2)] += 1
 
         # dict 타입인지 몰라서 확인해봄
-        print(word_cooc_mat.values())
-        print(word_cooc_mat.items())
-        print(word_cooc_mat.elements())
-        print(word_cooc_mat.keys())
+        # print(word_cooc_mat.values())
+        # print(word_cooc_mat.items())
+        # print(word_cooc_mat.elements())
+        # print(word_cooc_mat.keys())
 
         # list_key_value = [[k,v] for k, v in word_cooc_mat.items()]
 
-        data = pd.DataFrame({'Linkage': word_cooc_mat.keys(), 'Weight': word_cooc_mat.values()})
-
+        list_keys = [k for k in word_cooc_mat.keys()]
+        list_values = [v for v in word_cooc_mat.values()]
+        conv_list_keys = [[w1, w2] for w1, w2 in list_keys]
+        linkages = pd.Series(two_words for two_words in conv_list_keys)
+        weights = pd.Series(list_values)
+        data = pd.DataFrame({'Linkage': linkages, 'Weight': weights})
+        sorted_data = data.sort_values(by=['Weight'], ascending=False)
         # return list_key_value
-        return data
+        return sorted_data
 
 
 # Example
@@ -166,11 +171,10 @@ final_result = N.create_cooc_mat(selected_results)
 
 
 # print(final_result)
-
+# print(final_result['Linkage'][0])
 
 ''' To Do List
 객체화 - 완료
-pd.DataFrame 으로 만들기 - 결과 확인필요
-
-
+pd.DataFrame 으로 만들기 - 완료
+corpus2graph 로 다른 객체 하나 만들기 - 
 '''
