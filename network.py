@@ -25,7 +25,6 @@ import tensorflow as tf
 from tensorflow.python.data import Dataset
 
 
-
 class Processing():
     def __init__(self):
         tag_map = defaultdict(lambda : wn.NOUN)
@@ -173,8 +172,15 @@ final_result = N.create_cooc_mat(selected_results)
 # print(final_result)
 # print(final_result['Linkage'][0])
 
-''' To Do List
+"""  To Do List
 객체화 - 완료
 pd.DataFrame 으로 만들기 - 완료
 corpus2graph 로 다른 객체 하나 만들기 - 
-'''
+앞에 호출함수 파일 만들어서 그걸로 각각 본문 불러오기
+
+같이 나와야하는 단어들 합치기
+이상한 단어 없에기 
+동사와 명사 관계 나타낼수 있는지
+
+
+"""
