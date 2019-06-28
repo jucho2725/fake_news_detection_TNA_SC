@@ -243,7 +243,7 @@ class Processing():
 # print('***************************************')
 
 # # 어떤 태그들만 남길지
-# tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'VB']
+# tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
 #
 # selected_results = N.select_results(tagged_results, tag_filter)
 # print(selected_results)

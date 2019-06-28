@@ -19,15 +19,22 @@ from plotly.graph_objs import *
 
 import network
 
+""" 
+새로운 파일 실행할 때 바꿔야할 부분 
+
+1. 30줄 열어야할 파일 path
+2. 174줄 저장할 파일 path
+
+"""
 # text = "The Trump administration will delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
-text = open("Donald.txt", encoding='utf-8').read()
+text = open("Proof.txt", encoding='utf-8').read()
 # network 에서 호출하여 전처리
 N = network.Processing()
 lemed_content = N.lemma_whole(text)
 stopped_content = N.stopword(lemed_content)
 collocated_content = N.collocate_content(stopped_content)
 tagged_results = N.tag_content(collocated_content)
-tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'VB']
+tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
 selected_results = N.select_results(tagged_results, tag_filter)
 
 # 그래프를 그리는데 사용된 co occurrence matrix 결과(dataframe 형태)
@@ -157,21 +164,21 @@ class Visualization():
 
         return self.G
 
-    def save_graph(self):
-        nx.write_gexf(self.G, "Donald.gexf")
+    def save_graph(self, title):
+        nx.write_gexf(self.G, title)
 
 
 N = Visualization(final_result)
-N.creat_model(len(final_result))
+grpah = N.creat_model(len(final_result))
 N.vis_plt()
-N.save_graph()
+N.save_graph("Proof.gexf")
 
 
 #
 # 척도 계산하기
-class Measure:
-    def __init__(self, graph_ex):
-        self.graph_ex = graph_ex
+class Measure():
+    def __init__(self, graph):
+        self.graph = graph
 
     def Cal_Cent(self, g):
         deg_cent = nx.algorithms.degree_centrality(g)
@@ -189,7 +196,7 @@ class Measure:
         return deg_cent
 
     def Get_Info(self):
-        summary_g = nx.info(graph_ex)
+        summary_g = nx.info(self.graph)
         print(summary_g)
         return summary_g
 
@@ -266,7 +273,7 @@ class Measure:
         :return: (float) values
         """
         info = self.Get_Info()
-        start = self.Cal_Cent(self.graph_ex)
+        start = self.Cal_Cent(self.graph)
         deg_val = self.deg_GroupVal()
         clo_val = self.clo_GroupVal()
         bet_val = self.bet_GroupVal()
