@@ -6,7 +6,7 @@ Meta information(=features for machine learning) extraction
 May 18th, 2019
 author: Jin Uk, Cho
 
-source : https://kiddwannabe.blog.me/221362423659
+plt plotting source : https://kiddwannabe.blog.me/221362423659
 """
 
 import sys
@@ -34,7 +34,7 @@ lemed_content = N.lemma_whole(text)
 stopped_content = N.stopword(lemed_content)
 collocated_content = N.collocate_content(stopped_content)
 tagged_results = N.tag_content(collocated_content)
-tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
+tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
 selected_results = N.select_results(tagged_results, tag_filter)
 
 # 그래프를 그리는데 사용된 co occurrence matrix 결과(dataframe 형태)
@@ -248,7 +248,7 @@ class Measure():
         print(result)
         return result
 
-    def bet_GroupVal(self):
+    def bet_GroupVal(self):###########
         """
         :param (list) list of values:
         Cd = Summation(Max - i th value) / ((g-2)^2(g-1)/2)

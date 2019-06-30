@@ -74,7 +74,7 @@ class Processing():
     # 불용어 처리 함수
     def stopword(self, sentences):
         stopWords = set(stopwords.words('english'))
-        added_stopword = ['“', '”', '.', ',', '-', "—", "'s", "n't", "''", ';', '&', "``", '?']
+        added_stopword = ['“', '”', '.', ',', '-', "—", "–" ,"'s", "n't", "''", ';', '&', "``", '?', "‘", "’"]
         results = []
 
         for sent in sentences:
@@ -102,7 +102,8 @@ class Processing():
     # 태깅 함수
 
     def apply_collocations(self, sentence):
-        set_colloc = set([("Donald", "Trump"), ("ABC", "News"), ("Hillary", "Clinton"), ("Chelsea", "Clinton")])
+        set_colloc = set([("Donald", "Trump"), ("ABC", "News"), ("Hillary", "Clinton"),
+                          ("Chelsea", "Clinton"), ("Bill", "Clinton")])
         list_bigrams = list(nltk.bigrams(sentence))
         # print("list bigram is : {0}".format(list_bigrams))
         # print(list_bigrams[0][0])
@@ -191,7 +192,7 @@ class Processing():
     def create_cooc_mat(self, contents):
         """
         Create Co-Occurrence Matrix
-        :param contents: (list) processed data
+        :param contents: (list of list) processed data
         :return: (list) The number of times two words occur together in each sentence in a document. [(word1, word2), count]
         """
         word_cooc_mat = Counter()
@@ -224,26 +225,36 @@ class Processing():
         # return list_key_value
         return sorted_data
 
+    def cooc(self, file, tag_filter):
+        text = open(file, encoding='utf-8').read()
+        lem_cont = self.lemma_whole(text)
+        stop_cont = self.stopword(lem_cont)
+        col_cont = self.collocate_content(stop_cont)
+        tag_cont = self.tag_content(col_cont)
+        sel_cont = self.select_results(tag_cont, tag_filter=tag_filter)
+        fin_cont = self.create_cooc_mat(sel_cont)
+        return sel_cont, fin_cont
+
 """ 테스트 """
 # example_text = "The Trump administration will delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
-# text = open("Donald.txt", encoding='utf-8').read()
+# text = open("Proof.txt", encoding='utf-8').read()
 # print(text)
-
+#
 # N = Processing()
 # lemed_content = N.lemma_whole(text)
 # lemed_content = N.lemma_whole(example_text)
 # print(lemed_content)
-
+#
 # stopped_content = N.stopword(lemed_content)
 # collocated_content = N.collocate_content(stopped_content)
 # print(collocated_content)
-
+#
 # tagged_results = N.tag_content(collocated_content)
 # print(tagged_results)
 # print('***************************************')
-
+#
 # # 어떤 태그들만 남길지
-# tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
+tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
 #
 # selected_results = N.select_results(tagged_results, tag_filter)
 # print(selected_results)
@@ -251,6 +262,12 @@ class Processing():
 # final_result = N.create_cooc_mat(selected_results)
 # print(final_result)
 # print(final_result['Linkage'][0])
+
+N = Processing()
+df, s_df = N.cooc("Proof.txt", tag_filter=tag_filter)
+print(df['Linkage'][:20].tolist())
+print(list(df['Weight'][:20]))
+
 
 """  To Do List
 객체화 - 완료
