@@ -16,6 +16,11 @@ import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+class Corpus_Vectorize:
+
+
+class Reweight:
+
 
 def get_document_filenames(document_path='D:\\PythonProjects\\text_network_analysis\\data\\articles'):
     """
@@ -73,7 +78,7 @@ def display_scores(vectorizer, tfidf_result):
 
 def doc_vetcorize(body):
     """
-    한 문서에 대해서 vectorize
+    한 문서에 대해서 vectorize  --- 전체에 대해서 해야하는거아냐??
     :param body:
     :return:
     """

@@ -169,3 +169,9 @@ $RECYCLE.BIN/
 
 #
 .idea/
+
+# gexf files for gephi
+.gexf
+
+# plt files
+.png
