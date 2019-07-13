@@ -28,12 +28,12 @@ from tensorflow.python.data import Dataset
 
 
 class Processing():
-    def __init__(self):
+    def __init__(self, tag_filter):
         self.tag_map = defaultdict(lambda : wn.NOUN)
-        # print(tag_map)
         self.tag_map['J'] = wn.ADJ
         self.tag_map['V'] = wn.VERB
         self.tag_map['R'] = wn.ADV
+        self.tag_filter = tag_filter
 
     # def word_lemma(self, word):
     #     lemma_function = WordNetLemmatizer()
@@ -166,7 +166,7 @@ class Processing():
         return results
 
     # 태그 결과에서 필터링하는 함수
-    def select_results(self, contents, tag_filter):
+    def select_results(self, contents):
         """
         Select word by filtering certain tags
         :param contents: (list) processed data
@@ -180,7 +180,7 @@ class Processing():
             selection = []
             # 단어를 lex, tag 를 cat 이라 표현
             for lex, cat in sent:
-                if cat in tag_filter:
+                if cat in self.tag_filter:
                     # tag 말고 안에 단어 lex 만 남겨야함
                     selection.append(lex)
 
@@ -225,25 +225,28 @@ class Processing():
         # return list_key_value
         return sorted_data
 
-    def cooc(self, file, tag_filter):
+    def cooc(self, file):
         text = open(file, encoding='utf-8').read()
         lem_cont = self.lemma_whole(text)
         stop_cont = self.stopword(lem_cont)
         col_cont = self.collocate_content(stop_cont)
         tag_cont = self.tag_content(col_cont)
-        sel_cont = self.select_results(tag_cont, tag_filter=tag_filter)
+        sel_cont = self.select_results(tag_cont)
         fin_cont = self.create_cooc_mat(sel_cont)
         return sel_cont, fin_cont
 
-""" 테스트 """
+# """ 테스트 """
+
+# 어떤 태그들만 남길지
+# tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
 # example_text = "The Trump administration will delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
-text = open("Donald.txt", encoding='utf-8').read()
-# print(text)
-#
-N = Processing()
-lemed_content = N.lemma_whole(text)
+# # text = open("Donald.txt", encoding='utf-8').read()
+# # print(text)
+# #
+# N = Processing(tag_filter)
+# lemed_content = N.lemma_whole(text)
 # lemed_content = N.lemma_whole(example_text)
-print(lemed_content)
+# print(lemed_content)
 #
 # stopped_content = N.stopword(lemed_content)
 # collocated_content = N.collocate_content(stopped_content)
@@ -253,18 +256,17 @@ print(lemed_content)
 # print(tagged_results)
 # print('***************************************')
 #
-# # 어떤 태그들만 남길지
-tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
-#
-# selected_results = N.select_results(tagged_results, tag_filter)
+
+# #
+# selected_results = N.select_results(tagged_results)
 # print(selected_results)
 #
 # final_result = N.create_cooc_mat(selected_results)
 # print(final_result)
 # print(final_result['Linkage'][0])
 
-# N = Processing()
-# df, s_df = N.cooc("Donald.txt", tag_filter=tag_filter)
+# N = Processing(tag_filter)
+# df, s_df = N.cooc()
 # print(df['Linkage'][:20].tolist())
 # print(list(df['Weight'][:20]))
 
