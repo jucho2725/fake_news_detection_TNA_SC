@@ -50,7 +50,7 @@ class CorTfidf(Processing):
         corpus = []
         for doc in self.doc_filenames:
             processed_text, _ = self.cooc(filepath=doc)
-            print(doc)
+            # print(doc)
             x = self.doc2list(processed_text)[0]
             corpus.append(x)
         return corpus
@@ -96,7 +96,7 @@ class CorTfidf(Processing):
 class Reweight(CorTfidf):
     def __init__(self, tag_filter):
         super(Reweight, self).__init__(tag_filter)
-        self.doc_filenames = get_document_filenames()
+        # self.doc_filenames = get_document_filenames()
         self.df_tfidf = self.cor2tfidf(self.get_corpus())
 
     def doc_reweight_csv(self, cooc_mat, tfidf, doc_name):

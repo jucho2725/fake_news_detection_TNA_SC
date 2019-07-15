@@ -27,17 +27,31 @@ class Graph():
         self.G = nx.Graph()
         self.matrix = matrix
 
-    def create_graph(self, NETWORK_MAX):
+    def string_to_list(self, df):
+        temp = df['Linkage'].astype(str).str.split("'").str
+        first = temp.get(1).get_values()
+        second = temp.get(3).get_values()
+        linkage = pd.Series(list(zip(first, second)))
+        df['Linkage'] = linkage
+        return df
+
+    def create_graph(self, string_to_list=False):
         # MST(Minum Spanning Tree)-based graph
         # create edge
+        if string_to_list:
+            self.matrix = self.string_to_list(self.matrix)
+        else:
+            pass
+
         for i in range(len(self.matrix)):
             # print('{0} is the number'.format(len(matrix)))
             # print(matrix['Linkage'][i])
             w1 = self.matrix['Linkage'][i][0]
             w2 = self.matrix['Linkage'][i][1]
             count = self.matrix['Weight'][i]
-            i += 1
-            if i > NETWORK_MAX: break
+            # i += 1
+            # if i > NETWORK_MAX: # 노드 갯수 제어
+            #     break
 
             self.G.add_edge(w1, w2, weight=count)
 
@@ -59,7 +73,6 @@ class Graph():
 
 class Visualization(Graph):
     def __init__(self, matrix):
-        # 공부 더 필요
         super().__init__(matrix)
 
     def vis_plt(self):
