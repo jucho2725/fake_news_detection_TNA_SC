@@ -10,12 +10,14 @@ author: Jin Uk, Cho
 import sklearn
 import networkx as nx
 import pandas as pd
-from network_visualization import Visualization
+import numpy as np
+
+from network_visualization import Graph
+from reweight import CorTfidf
 
 # 척도 계산하기
-class Measure(Visualization):
+class Measure():
     def __init__(self, graph):
-        super.__init__(self)
         self.graph = graph
 
     def Cal_Cent(self, g):
@@ -123,6 +125,44 @@ class Measure(Visualization):
 # print(result.Get_Value())
 
 
+class Feature(CorTfidf):
+    def __init__(self, matrix, tag_filter):
+        super(Feature, self).__init__(tag_filter)
+        model = Graph()
+        self.graph = model.create_graph(matrix, string_to_list=True)
+        # self.doc_filenames = get_document_filenames()
+        self.df_tfidf = self.cor2tfidf(self.get_corpus())
 
+    def cal_tfidf(self):
+        tfidf_mean = np.mean(self.df_tfidf['Tfidf'])
+        tfidf_var = np.var(self.df_tfidf['Tfidf'])
+        return [tfidf_mean, tfidf_var]
+
+    def cal_edge_weight(self):
+        wt_mean = np.mean(self.matrix['Weight'])
+        wt_var = np.var(self.matrix['Weight'])
+        return [wt_mean, wt_var]
+
+    def edge_num(self):
+        return len(self.matrix['Linkage'])
+
+    def cal_net_feature(self):
+        net = Measure(self.graph)
+        _, _, bet_val = net.Get_Value()
+        common_neighbors = [len(list(nx.common_neighbors(net, u, v))) for u, v in net.edges]
+        com_mean = np.mean(np.array(common_neighbors))
+        com_var = np.var(np.array(common_neighbors))
+        degree_sequence = sorted([d for n, d in net.degree()], reverse=True)
+        core_count = len([i for i in degree_sequence if i > np.quantile(degree_sequence, 0.75)])
+        return com_mean, com_var, core_count, bet_val,
+
+
+    def make_df(self):
+        feature_df = pd.DataFrame({'tfidf_mean': 1.,
+                                   'tfidf_var': pd.Timestamp('20130102'),
+                                   'wt_mean': pd.Series(1, index=list(range(4)), dtype='float32'),
+                                   'wt_var': np.array([3] * 4, dtype='int32'),
+                                   'edge_num': pd.Categorical(["test", "train", "test", "train"]),
+                                   'F': 'foo'})
 
 ''' TO DO '''
