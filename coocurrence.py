@@ -225,15 +225,18 @@ class Processing():
         # return list_key_value
         return sorted_data
 
-    def cooc(self, file):
-        text = open(file, encoding='utf-8').read()
+    def cooc(self, filepath=None, text=None):
+        if filepath is not None:
+            text = open(filepath, encoding='utf-8').read()
+        else:
+            text = text
         lem_cont = self.lemma_whole(text)
         stop_cont = self.stopword(lem_cont)
         col_cont = self.collocate_content(stop_cont)
         tag_cont = self.tag_content(col_cont)
         sel_cont = self.select_results(tag_cont)
-        fin_cont = self.create_cooc_mat(sel_cont)
-        return sel_cont, fin_cont
+        cooc_cont = self.create_cooc_mat(sel_cont)
+        return sel_cont, cooc_cont
 
 # """ 테스트 """
 

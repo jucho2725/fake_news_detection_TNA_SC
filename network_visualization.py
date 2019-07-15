@@ -1,7 +1,6 @@
 """
 graph visualization of Co-Occurrence matrix
-&
-Meta information(=features for machine learning) extraction
+
 
 May 18th, 2019
 author: Jin Uk, Cho
@@ -17,58 +16,18 @@ import pandas as pd
 import plotly.plotly as py
 from plotly.graph_objs import *
 
-import network
+from coocurrence import Processing
 
-""" 
-새로운 파일 실행할 때 바꿔야할 부분 
-
-1. 30줄 열어야할 파일 path
-2. 174줄 저장할 파일 path
-
-"""
-# text = "The Trump administration will delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
-text = open("Proof.txt", encoding='utf-8').read()
-# network 에서 호출하여 전처리
-N = network.Processing()
-lemed_content = N.lemma_whole(text)
-stopped_content = N.stopword(lemed_content)
-collocated_content = N.collocate_content(stopped_content)
-tagged_results = N.tag_content(collocated_content)
-tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
-selected_results = N.select_results(tagged_results, tag_filter)
-
-# 그래프를 그리는데 사용된 co occurrence matrix 결과(dataframe 형태)
-final_result = N.create_cooc_mat(selected_results)
-print('The network has {0} edges'.format(len(final_result)))
-print(final_result)
-
-
-def label_result(selected_result):  # label들 확인
-    label = []
-    for sent in selected_result:
-        for i in sent:
-            if i not in label:
-                label.append(i)
-    return label
-
-
-label = label_result(selected_results)
-print("label is")
-print(label)
-
-
-class Visualization():
+class Graph():
+    """
+    Visualize Co-Occurrence Matrix
+    :param matrix: (list) co-occurence matrix data
+    """
     def __init__(self, matrix):
-        """
-        Visualize Co-Occurrence Matrix
-        :param matrix: (list) co-occurence matrix data
-        :param NETWORK_MAX: (int) number of nodes to plot
-        """
-        # 공부 더 필요
         self.G = nx.Graph()
         self.matrix = matrix
 
-    def creat_model(self, NETWORK_MAX):
+    def create_graph(self, NETWORK_MAX):
         # MST(Minum Spanning Tree)-based graph
         # create edge
         for i in range(len(self.matrix)):
@@ -85,13 +44,23 @@ class Visualization():
         # create MST model
         self.T = nx.minimum_spanning_tree(self.G)
         nodes = nx.nodes(self.T)
+        print("**")
+        print(nodes)
         degrees = nx.degree(self.T)
+        print("**")
+        print(degrees)
         # set size of node
         self.node_size = []
         for node in nodes:
             ns = degrees[node] * 100
             self.node_size.append(ns)
         self.pos = nx.fruchterman_reingold_layout(self.G, k=0.5)
+
+
+class Visualization(Graph):
+    def __init__(self, matrix):
+        # 공부 더 필요
+        super().__init__(matrix)
 
     def vis_plt(self):
         # matplotlib 그래프 생성
@@ -168,8 +137,19 @@ class Visualization():
         nx.write_gexf(self.G, title)
 
 
-N = Visualization(final_result)
-grpah = N.creat_model(len(final_result))
+""" 테스트 """
+text = "The Trump administration will delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
+# text = open("Proof.txt", encoding='utf-8').read()
+tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
+# network 에서 호출하여 전처리
+model = Processing(tag_filter)
+sel_result, cooc_mat = model.cooc(text=text)
+
+# 그래프를 그리는데 사용된 co occurrence matrix 결과(dataframe 형태)
+print('The network has {0} edges'.format(len(cooc_mat)))
+print(cooc_mat)
+N = Visualization(cooc_mat)
+grpah = N.create_graph(len(cooc_mat))
 N.vis_plt()
 N.save_graph("Proof.gexf")
 
@@ -184,3 +164,15 @@ GroupVal 함수 하나로 통합해서 어떤 척도 계산할지만 입력하�
 
 return, input 정확히 쓰기
 """
+# def label_result(selected_result):  # label들 확인하려 했던 함수. G.nodes로 출력가능함
+#     label = []
+#     for sent in selected_result:
+#         for i in sent:
+#             if i not in label:
+#                 label.append(i)
+#     return label
+#
+#
+# label = label_result(sel_result)
+# print("label is")
+# print(label)

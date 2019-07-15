@@ -1,5 +1,5 @@
 """
-Extract features
+Meta information(=features for machine learning) extraction
 
 June 2nd, 2019
 author: Jin Uk, Cho
@@ -10,7 +10,7 @@ author: Jin Uk, Cho
 import sklearn
 import networkx as nx
 import pandas as pd
-from visualization import Visualization
+from network_visualization import Visualization
 
 # 척도 계산하기
 class Measure(Visualization):

@@ -8,7 +8,7 @@ June 30th, 2019
 author: Jin Uk, Cho
 """
 
-from network import Processing
+from coocurrence import Processing
 import pandas as pd
 
 import os
@@ -49,7 +49,7 @@ class CorTfidf(Processing):
         """
         corpus = []
         for doc in self.doc_filenames:
-            processed_text, _ = self.cooc(doc)
+            processed_text, _ = self.cooc(filepath=doc)
             print(doc)
             x = self.doc2list(processed_text)[0]
             corpus.append(x)
@@ -117,7 +117,7 @@ class Reweight(CorTfidf):
 
     def get_docs_rew_csv(self):
         for doc in self.doc_filenames:
-            _, df_cooc = self.cooc(doc)
+            _, df_cooc = self.cooc(filepath=doc)
             self.doc_reweight_csv(df_cooc, self.df_tfidf, doc)
         print("all documents are reweighted and saved to .csv files.")
 
