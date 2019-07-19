@@ -136,12 +136,12 @@ class Feature(CorTfidf):
     def cal_tfidf(self):
         tfidf_mean = np.mean(self.df_tfidf['Tfidf'])
         tfidf_var = np.var(self.df_tfidf['Tfidf'])
-        return [tfidf_mean, tfidf_var]
+        return tfidf_mean, tfidf_var
 
     def cal_edge_weight(self):
         wt_mean = np.mean(self.matrix['Weight'])
         wt_var = np.var(self.matrix['Weight'])
-        return [wt_mean, wt_var]
+        return wt_mean, wt_var
 
     def edge_num(self):
         return len(self.matrix['Linkage'])
@@ -158,11 +158,15 @@ class Feature(CorTfidf):
 
 
     def make_df(self):
+        tfidf_mean, tfidf_var = 
+        wt_mean, wt_var = self.cal_edge_weight()
+
         feature_df = pd.DataFrame({'tfidf_mean': 1.,
                                    'tfidf_var': pd.Timestamp('20130102'),
                                    'wt_mean': pd.Series(1, index=list(range(4)), dtype='float32'),
                                    'wt_var': np.array([3] * 4, dtype='int32'),
                                    'edge_num': pd.Categorical(["test", "train", "test", "train"]),
-                                   'F': 'foo'})
+                                   'com_mean': 'foo'
+                                   'com_var':})
 
 ''' TO DO '''
