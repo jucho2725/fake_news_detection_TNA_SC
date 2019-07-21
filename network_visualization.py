@@ -18,17 +18,19 @@ from plotly.graph_objs import *
 
 from coocurrence import Processing
 
-class Graph():
+
+class Graph:
     """
     Visualize Co-Occurrence Matrix
     :param matrix: (list) co-occurence matrix data
     """
-    def __init__(self, matrix):
+
+    def __init__(self, doc_path):
         self.G = nx.Graph()
-        self.matrix = matrix
+        self.matrix = pd.read_csv(doc_path, index_col=0)
 
     def string_to_list(self, df):
-        temp = df['Linkage'].astype(str).str.split("'").str
+        temp = df.loc[:, 'Linkage'].astype(str).str.split("'").str
         first = temp.get(1).get_values()
         second = temp.get(3).get_values()
         linkage = pd.Series(list(zip(first, second)))
@@ -36,19 +38,24 @@ class Graph():
         return df
 
     def create_graph(self, string_to_list=False):
+        """
+        네트워크 이론에 사용할 그래프를 만들어줌
+        :param string_to_list: 기존에 만들어진 csv 를 가져오려면 이걸 True로 해야함
+        :return:
+        """
         # MST(Minum Spanning Tree)-based graph
         # create edge
         if string_to_list:
-            self.matrix = self.string_to_list(self.matrix)
+            matrix = self.string_to_list(self.matrix)
         else:
             pass
 
         for i in range(len(self.matrix)):
             # print('{0} is the number'.format(len(matrix)))
             # print(matrix['Linkage'][i])
-            w1 = self.matrix['Linkage'][i][0]
-            w2 = self.matrix['Linkage'][i][1]
-            count = self.matrix['Weight'][i]
+            w1 = matrix.loc[i, 'Linkage'][0]
+            w2 = matrix.loc[i, 'Linkage'][1]
+            count = matrix.loc[i, 'Weight']
             # i += 1
             # if i > NETWORK_MAX: # 노드 갯수 제어
             #     break
@@ -58,22 +65,18 @@ class Graph():
         # create MST model
         self.T = nx.minimum_spanning_tree(self.G)
         nodes = nx.nodes(self.T)
-        print("**")
-        print(nodes)
         degrees = nx.degree(self.T)
-        print("**")
-        print(degrees)
         # set size of node
         self.node_size = []
         for node in nodes:
             ns = degrees[node] * 100
             self.node_size.append(ns)
         self.pos = nx.fruchterman_reingold_layout(self.G, k=0.5)
-
+        return self.G, matrix
 
 class Visualization(Graph):
-    def __init__(self, matrix):
-        super().__init__(matrix)
+    def __init__(self):
+        super().__init__()
 
     def vis_plt(self):
         # matplotlib 그래프 생성
@@ -150,22 +153,21 @@ class Visualization(Graph):
         nx.write_gexf(self.G, title)
 
 
-""" 테스트 """
-text = "The Trump administration will delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
-# text = open("Proof.txt", encoding='utf-8').read()
-tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
-# network 에서 호출하여 전처리
-model = Processing(tag_filter)
-sel_result, cooc_mat = model.cooc(text=text)
-
-# 그래프를 그리는데 사용된 co occurrence matrix 결과(dataframe 형태)
-print('The network has {0} edges'.format(len(cooc_mat)))
-print(cooc_mat)
-N = Visualization(cooc_mat)
-grpah = N.create_graph(len(cooc_mat))
-N.vis_plt()
-N.save_graph("Proof.gexf")
-
+# """ 테스트 """
+# text = "The Trump administration will delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
+# # text = open("Proof.txt", encoding='utf-8').read()
+# tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
+# # network 에서 호출하여 전처리
+# model = Processing(tag_filter)
+# sel_result, cooc_mat = model.cooc(text=text)
+#
+# # 그래프를 그리는데 사용된 co occurrence matrix 결과(dataframe 형태)
+# print('The network has {0} edges'.format(len(cooc_mat)))
+# print(cooc_mat)
+# N = Visualization(cooc_mat)
+# grpah = N.create_graph(len(cooc_mat))
+# N.vis_plt()
+# N.save_graph("Proof.gexf")
 
 #
 

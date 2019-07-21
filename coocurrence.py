@@ -8,7 +8,6 @@ source : https://m.blog.naver.com/PostView.nhn?blogId=kiddwannabe&logNo=22115631
 
 """
 
-
 from collections import Counter, defaultdict
 from itertools import combinations
 
@@ -29,7 +28,7 @@ from tensorflow.python.data import Dataset
 
 class Processing():
     def __init__(self, tag_filter):
-        self.tag_map = defaultdict(lambda : wn.NOUN)
+        self.tag_map = defaultdict(lambda: wn.NOUN)
         self.tag_map['J'] = wn.ADJ
         self.tag_map['V'] = wn.VERB
         self.tag_map['R'] = wn.ADV
@@ -52,7 +51,7 @@ class Processing():
     #         return ''
 
     # 문장 하나 lemmatization 함수
-    def sent_lemma(self, text): # token에 is, 같은 애들을 be 로 변환 시키지 않음
+    def sent_lemma(self, text):  # token에 is, 같은 애들을 be 로 변환 시키지 않음
         results = []
         tokens = word_tokenize(text)
         lmtzr = WordNetLemmatizer()
@@ -74,7 +73,7 @@ class Processing():
     # 불용어 처리 함수
     def stopword(self, sentences):
         stopWords = set(stopwords.words('english'))
-        added_stopword = ['“', '”', '.', ',', '-', "—", "–" ,"'s", "n't", "''", ';', '&', "``", '?', "‘", "’"]
+        added_stopword = ['“', '”', '.', ',', '-', "—", "–", "'s", "n't", "''", ';', '&', "``", '?', "‘", "’"]
         results = []
 
         for sent in sentences:
@@ -144,7 +143,6 @@ class Processing():
                     new_sentence.append(new_word)
             return new_sentence
 
-
     def collocate_content(self, contents):
         results = []
         for sent in contents:
@@ -198,12 +196,12 @@ class Processing():
         word_cooc_mat = Counter()
         for line in contents:
             for w1, w2 in combinations(line, 2):
-                if len(w1) == 1 or len(w2) == 1: # 1음절 단어 제외
+                if len(w1) == 1 or len(w2) == 1:  # 1음절 단어 제외
                     continue
-                if w1 == w2: # 동일한 단어 벡터는 계산 x.
+                if w1 == w2:  # 동일한 단어 벡터는 계산 x.
                     continue
-                elif word_cooc_mat[(w2, w1)] >= 1: # 동일한 조합이고 순서만 반대인 경우
-                    word_cooc_mat[(w2, w1)] += 1 # 처음 했던 조합에 카운트하겠다
+                elif word_cooc_mat[(w2, w1)] >= 1:  # 동일한 조합이고 순서만 반대인 경우
+                    word_cooc_mat[(w2, w1)] += 1  # 처음 했던 조합에 카운트하겠다
                 else:
                     word_cooc_mat[(w1, w2)] += 1
 
@@ -234,9 +232,10 @@ class Processing():
         stop_cont = self.stopword(lem_cont)
         col_cont = self.collocate_content(stop_cont)
         tag_cont = self.tag_content(col_cont)
-        sel_cont = self.select_results(tag_cont)
-        cooc_cont = self.create_cooc_mat(sel_cont)
+        sel_cont = self.select_results(tag_cont) # 단어 리스트
+        cooc_cont = self.create_cooc_mat(sel_cont) # 단어간 연결 데이터프레임
         return sel_cont, cooc_cont
+
 
 # """ 테스트 """
 

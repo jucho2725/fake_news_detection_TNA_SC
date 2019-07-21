@@ -17,21 +17,14 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-def get_document_filenames(document_path='D:\\PythonProjects\\text_network_analysis\\tobedeleted'):
-    """
-    파일 이름 받기
-    """
-    return [os.path.join(document_path, each)
-            for each in os.listdir(document_path)]
-
 class CorTfidf(Processing):
     """
     corpus 에 대한 모든 단어의 tfidf 값을 dataframe 형태로 저장
     """
-    def __init__(self, tag_filter):
-        super().__init__(tag_filter)
-        self.doc_filenames = get_document_filenames()
 
+    def __init__(self, tag_filter, docs_list):
+        super().__init__(tag_filter)
+        self.doc_filenames = docs_list
 
     def doc2list(self, text):
         """
@@ -43,7 +36,7 @@ class CorTfidf(Processing):
         doc_joined = [" ".join(sent_joined)]
         return doc_joined
 
-    def get_corpus(self):  ########### 진행중
+    def get_corpus(self):
         """
         각 기사를 한 문장의 리스트로 만듦. 그것들을 연결해 tfidf를 진행할 코퍼스 생성
         """
@@ -90,13 +83,13 @@ class CorTfidf(Processing):
         vectorizer.fit(corpus)
         tfidf_result = vectorizer.transform(corpus)
         x = self.display_scores(vectorizer, tfidf_result)
+        x.to_csv(self.doc_filenames[0][:-20] + 'tfidf.csv')
         return x
 
 
 class Reweight(CorTfidf):
-    def __init__(self, tag_filter):
-        super(Reweight, self).__init__(tag_filter)
-        # self.doc_filenames = get_document_filenames()
+    def __init__(self, tag_filter, doc_path_list):
+        super(Reweight, self).__init__(tag_filter, doc_path_list)
         self.df_tfidf = self.cor2tfidf(self.get_corpus())
 
     def doc_reweight_csv(self, cooc_mat, tfidf, doc_name):
@@ -116,39 +109,24 @@ class Reweight(CorTfidf):
         return redf
 
     def get_docs_rew_csv(self):
-        for doc in self.doc_filenames:
-            _, df_cooc = self.cooc(filepath=doc)
-            self.doc_reweight_csv(df_cooc, self.df_tfidf, doc)
+        for doc_name in self.doc_filenames:
+            _, df_cooc = self.cooc(filepath=doc_name)
+            self.doc_reweight_csv(df_cooc, self.df_tfidf, doc_name)
         print("all documents are reweighted and saved to .csv files.")
 
 
-def main():
-    tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
-    model = Reweight(tag_filter)
-    model.get_docs_rew_csv()
+# def main():
+#     tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
+#     model = Reweight(tag_filter)
+    # model.get_docs_rew_csv(doc_name=)
 
 
-if __name__ == '__main__':
-    main()
-
+# if __name__ == '__main__':
+#     main()
 
 #
-# """ 테스트 """
-# example_text = "The Trump administration will delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
-# sent_text = [
-#     'The Trump administration will delay tariff on car and car part import for up to six month a it negotiate trade deal with the European Union and Japan .',
-#     'In a proclamation Friday , Trump say he direct U.S.Trade Representative Robert Lighthizer to seek agreement to “ address the threatened impairment ” of national security from car import .',
-#     'Trump could choose to move forward with tariff during the talk .',
-#     '“ United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates , ” White House press secretary Sarah Huckabee Sanders say in a statement .',
-#     '“ The negotiation process will be lead by United States Trade Representative Robert Lighthizer and , if agreement be not reach within 180 day , the President will determine whether and what further action need to be take .']
-#
-# N = ps()
-# corpus = N.lemma_whole(example_text)
-# input2_corrected = [" ".join(x) for x in corpus]
-# print(input2_corrected)
-#
-# tfidv = TfidfVectorizer().fit(input2_corrected)
-# print(tfidv.transform(input2_corrected).toarray())
+
+
 #
 ''' TO DO 
 1. 반복문횟수 줄이기 - 너무 오래걸림
@@ -163,4 +141,3 @@ See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stabl
 
 3. 각 메서드에 대한 간단한 설명 달기
 '''
-

@@ -5,22 +5,21 @@ June 2nd, 2019
 author: Jin Uk, Cho
 """
 
-
-
 import sklearn
 import networkx as nx
 import pandas as pd
 import numpy as np
 
 from network_visualization import Graph
-from reweight import CorTfidf
+from reweight import Reweight
+
 
 # 척도 계산하기
 class Measure():
     def __init__(self, graph):
         self.graph = graph
 
-    def Cal_Cent(self, g):
+    def cal_Cent(self, g):
         deg_cent = nx.algorithms.degree_centrality(g)
         clo_cent = nx.algorithms.closeness_centrality(g)
         bet_cent = nx.algorithms.betweenness_centrality(g)
@@ -35,12 +34,12 @@ class Measure():
 
         return deg_cent
 
-    def Get_Info(self):
+    def get_Info(self):
         summary_g = nx.info(self.graph)
         print(summary_g)
         return summary_g
 
-    def Create_Dataframe(self):
+    def create_Dataframe(self):
         """
         :return: (dataframe) table of info of each nodes
         """
@@ -88,7 +87,7 @@ class Measure():
         print(result)
         return result
 
-    def bet_GroupVal(self):###########
+    def bet_GroupVal(self):  ###########
         """
         :param (list) list of values:
         Cd = Summation(Max - i th value) / ((g-2)^2(g-1)/2)
@@ -107,13 +106,13 @@ class Measure():
         return result
 
     #
-    def Get_Value(self):
+    def get_Value(self):
         """
         calculate all values and return it as a list
         :return: (float) values
         """
-        info = self.Get_Info()
-        start = self.Cal_Cent(self.graph)
+        info = self.get_Info()
+        start = self.cal_Cent(self.graph)
         deg_val = self.deg_GroupVal()
         clo_val = self.clo_GroupVal()
         bet_val = self.bet_GroupVal()
@@ -121,17 +120,11 @@ class Measure():
         return deg_val, clo_val, bet_val
 
 
-# result = Measure(graph_ex)
-# print(result.Get_Value())
+class Feature():
+    def __init__(self, doc_path_list):
 
-
-class Feature(CorTfidf):
-    def __init__(self, matrix, tag_filter):
-        super(Feature, self).__init__(tag_filter)
-        model = Graph()
-        self.graph = model.create_graph(matrix, string_to_list=True)
-        # self.doc_filenames = get_document_filenames()
-        self.df_tfidf = self.cor2tfidf(self.get_corpus())
+        self.doc_filenames = doc_path_list
+        self.df_tfidf = pd.read_csv(doc_path_list[0][:-20] + 'tfidf.csv', index_col=0)
 
     def cal_tfidf(self):
         tfidf_mean = np.mean(self.df_tfidf['Tfidf'])
@@ -143,30 +136,55 @@ class Feature(CorTfidf):
         wt_var = np.var(self.matrix['Weight'])
         return wt_mean, wt_var
 
-    def edge_num(self):
+    def cal_edge_num(self):
         return len(self.matrix['Linkage'])
 
     def cal_net_feature(self):
-        net = Measure(self.graph)
-        _, _, bet_val = net.Get_Value()
-        common_neighbors = [len(list(nx.common_neighbors(net, u, v))) for u, v in net.edges]
+        net = Measure(self.G)
+        _, _, bet_val = net.get_Value()
+        common_neighbors = [len(list(nx.common_neighbors(net, u, v))) for u, v in self.G.edges]
         com_mean = np.mean(np.array(common_neighbors))
         com_var = np.var(np.array(common_neighbors))
-        degree_sequence = sorted([d for n, d in net.degree()], reverse=True)
+        degree_sequence = sorted([d for n, d in self.G.degree()], reverse=True)
         core_count = len([i for i in degree_sequence if i > np.quantile(degree_sequence, 0.75)])
         return com_mean, com_var, core_count, bet_val,
 
-
-    def make_df(self):
-        tfidf_mean, tfidf_var = 
+    def make_df(self, doc_path, label='fake'):
+        net = Graph(doc_path)
+        self.G, self.matrix = net.create_graph(string_to_list=True)  # 이미 tfidf_reweight.csv 로 된 애들을 만들어놔서 그걸로 시작해야함
+        tfidf_mean, tfidf_var = self.cal_tfidf()
         wt_mean, wt_var = self.cal_edge_weight()
+        edge_num = self.cal_edge_num()
+        com_mean, com_var, core_count, bet_val = self.cal_net_feature()
 
-        feature_df = pd.DataFrame({'tfidf_mean': 1.,
-                                   'tfidf_var': pd.Timestamp('20130102'),
-                                   'wt_mean': pd.Series(1, index=list(range(4)), dtype='float32'),
-                                   'wt_var': np.array([3] * 4, dtype='int32'),
-                                   'edge_num': pd.Categorical(["test", "train", "test", "train"]),
-                                   'com_mean': 'foo'
-                                   'com_var':})
+        feature_df_one = {'tfidf_mean': tfidf_mean,
+                          'tfidf_var': tfidf_var,
+                          'wt_mean': wt_mean,
+                          'wt_var': wt_var,
+                          'edge_num': edge_num,
+                          'com_mean': com_mean,
+                          'com_var': com_var,
+                          'core_count': core_count,
+                          'betweeness': bet_val,
+                          'label': label, 'index': doc_path[-20:-4]}
 
-''' TO DO '''
+        return feature_df_one
+
+    def make_df_from_dataset(self, label):
+        idx_list = []
+        row_list = []
+        for doc_path in self.doc_filenames:
+            idx_list.append(doc_path[-20:-4])
+            row_list.append(self.make_df(doc_path, label))
+
+        feature_df = pd.DataFrame(row_list, columns=row_list[0].keys(), index=idx_list)
+
+        return feature_df
+
+
+''' TO DO 
+
+Longest path 구현? 
+or Bidirectional 그래프로 바꿀까 
+
+'''
