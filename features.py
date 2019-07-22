@@ -20,19 +20,19 @@ class Measure():
         self.graph = graph
 
     def cal_Cent(self, g):
-        deg_cent = nx.algorithms.degree_centrality(g)
-        clo_cent = nx.algorithms.closeness_centrality(g)
+        # deg_cent = nx.algorithms.degree_centrality(g)
+        # clo_cent = nx.algorithms.closeness_centrality(g)
         bet_cent = nx.algorithms.betweenness_centrality(g)
         # eig_cent = nx.algorithms.eigenvector_centrality_numpy(g)
         # info_cent = nx.algorithms.information_centrality(g)
-        list_deg = [k for k in deg_cent.values()]
-        self.list_deg = list_deg
-        list_clo = [k for k in clo_cent.values()]
-        self.list_clo = list_clo
+        # list_deg = [k for k in deg_cent.values()]
+        # self.list_deg = list_deg
+        # list_clo = [k for k in clo_cent.values()]
+        # self.list_clo = list_clo
         list_bet = [k for k in bet_cent.values()]
         self.list_bet = list_bet
 
-        return deg_cent
+        # return deg_cent
 
     def get_Info(self):
         summary_g = nx.info(self.graph)
@@ -97,7 +97,7 @@ class Measure():
         max_val = max(self.list_bet)
         g = len(self.list_bet)
         gg = (pow((g - 2), 2) * (g - 1)) / (2)
-        print('maximum value of betweenness cetrality is : {0}'.format(max_val))
+        # print('maximum value of betweenness cetrality is : {0}'.format(max_val))
         for i in self.list_bet:
             tmp = max_val - i
             X += tmp
@@ -111,18 +111,17 @@ class Measure():
         calculate all values and return it as a list
         :return: (float) values
         """
-        info = self.get_Info()
+        # info = self.get_Info()
         start = self.cal_Cent(self.graph)
-        deg_val = self.deg_GroupVal()
-        clo_val = self.clo_GroupVal()
+        # deg_val = self.deg_GroupVal()
+        # clo_val = self.clo_GroupVal()
         bet_val = self.bet_GroupVal()
 
-        return deg_val, clo_val, bet_val
+        return bet_val
 
 
 class Feature():
     def __init__(self, doc_path_list):
-
         self.doc_filenames = doc_path_list
         self.df_tfidf = pd.read_csv(doc_path_list[0][:-20] + 'tfidf.csv', index_col=0)
 
@@ -131,31 +130,31 @@ class Feature():
         tfidf_var = np.var(self.df_tfidf['Tfidf'])
         return tfidf_mean, tfidf_var
 
-    def cal_edge_weight(self):
-        wt_mean = np.mean(self.matrix['Weight'])
-        wt_var = np.var(self.matrix['Weight'])
+    def cal_edge_weight(self, matrix):
+        wt_mean = np.mean(matrix['Weight'])
+        wt_var = np.var(matrix['Weight'])
         return wt_mean, wt_var
 
-    def cal_edge_num(self):
-        return len(self.matrix['Linkage'])
+    def cal_edge_num(self, matrix):
+        return len(matrix['Linkage'])
 
-    def cal_net_feature(self):
-        net = Measure(self.G)
-        _, _, bet_val = net.get_Value()
-        common_neighbors = [len(list(nx.common_neighbors(net, u, v))) for u, v in self.G.edges]
+    def cal_net_feature(self, G):
+        net = Measure(G)
+        bet_val = net.get_Value()
+        common_neighbors = [len(list(nx.common_neighbors(net, u, v))) for u, v in G.edges]
         com_mean = np.mean(np.array(common_neighbors))
         com_var = np.var(np.array(common_neighbors))
-        degree_sequence = sorted([d for n, d in self.G.degree()], reverse=True)
+        degree_sequence = sorted([d for n, d in G.degree()], reverse=True)
         core_count = len([i for i in degree_sequence if i > np.quantile(degree_sequence, 0.75)])
         return com_mean, com_var, core_count, bet_val,
 
     def make_df(self, doc_path, label='fake'):
-        net = Graph(doc_path)
-        self.G, self.matrix = net.create_graph(string_to_list=True)  # 이미 tfidf_reweight.csv 로 된 애들을 만들어놔서 그걸로 시작해야함
+        net = Graph()
+        G, matrix = net.create_graph(doc_path, string_to_list=True)  # 이미 tfidf_reweight.csv 로 된 애들을 만들어놔서 그걸로 시작해야함
         tfidf_mean, tfidf_var = self.cal_tfidf()
-        wt_mean, wt_var = self.cal_edge_weight()
-        edge_num = self.cal_edge_num()
-        com_mean, com_var, core_count, bet_val = self.cal_net_feature()
+        wt_mean, wt_var = self.cal_edge_weight(matrix)
+        edge_num = self.cal_edge_num(matrix)
+        com_mean, com_var, core_count, bet_val = self.cal_net_feature(G)
 
         feature_df_one = {'tfidf_mean': tfidf_mean,
                           'tfidf_var': tfidf_var,

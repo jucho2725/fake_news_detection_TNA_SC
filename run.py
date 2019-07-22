@@ -4,7 +4,14 @@ import time
 from reweight import CorTfidf, Reweight
 from features import Feature
 
-def get_document_filenames(document_path='D:\\PythonProjects\\text_network_analysis\\data\\reweighted_example'):
+def get_doc_filenames(document_path='D:\\PythonProjects\\text_network_analysis\\data\\reweighted_example'):
+    """
+    파일 이름 받기
+    """
+    return [os.path.join(document_path, each)
+            for each in os.listdir(document_path)]
+
+def get_rew_filenames(document_path='D:\\PythonProjects\\text_network_analysis\\data\\reweighted_example\\reweighted'):
     """
     파일 이름 받기
     """
@@ -14,7 +21,7 @@ def get_document_filenames(document_path='D:\\PythonProjects\\text_network_analy
 def main():
     tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
     startTime = time.time()
-    doc_path_list = get_document_filenames()
+    doc_path_list = get_doc_filenames()
 
     print("Get tfidf value from corpus")
     reweighting_model = Reweight(tag_filter, doc_path_list=doc_path_list)
@@ -31,14 +38,15 @@ def main():
     print(" ")
 
     print("Make a graph and read tfidf result")
-    feature_model = Feature(doc_path_list=doc_path_list) # init - 그래프 만들고 tfidf.csv 불러옴
+    rew_path_list = get_rew_filenames()
+    feature_model = Feature(doc_path_list=rew_path_list) # init - 그래프 만들고 tfidf.csv 불러옴
     graphTime = time.time()
     print("It took %d seconds" % (graphTime - rewTime))
 
     print("make all features and load all to dataframe ")
     df = feature_model.make_df_from_dataset(label='test')
 
-    df.to_csv('result.csv')
+    df.to_csv('D:\\PythonProjects\\text_network_analysis\\result.csv')
     print("Done")
     endTime = time.time()
     print("It took %d seconds" % (endTime - graphTime))

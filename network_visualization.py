@@ -25,9 +25,9 @@ class Graph:
     :param matrix: (list) co-occurence matrix data
     """
 
-    def __init__(self, doc_path):
+    def __init__(self):
         self.G = nx.Graph()
-        self.matrix = pd.read_csv(doc_path, index_col=0)
+
 
     def string_to_list(self, df):
         temp = df.loc[:, 'Linkage'].astype(str).str.split("'").str
@@ -37,7 +37,7 @@ class Graph:
         df['Linkage'] = linkage
         return df
 
-    def create_graph(self, string_to_list=False):
+    def create_graph(self, doc_path, string_to_list=False):
         """
         네트워크 이론에 사용할 그래프를 만들어줌
         :param string_to_list: 기존에 만들어진 csv 를 가져오려면 이걸 True로 해야함
@@ -45,12 +45,13 @@ class Graph:
         """
         # MST(Minum Spanning Tree)-based graph
         # create edge
+        matrix = pd.read_csv(doc_path, index_col=0)
         if string_to_list:
-            matrix = self.string_to_list(self.matrix)
+            matrix = self.string_to_list(matrix)
         else:
             pass
 
-        for i in range(len(self.matrix)):
+        for i in range(len(matrix)):
             # print('{0} is the number'.format(len(matrix)))
             # print(matrix['Linkage'][i])
             w1 = matrix.loc[i, 'Linkage'][0]
@@ -112,8 +113,8 @@ class Visualization(Graph):
         pos = self.pos
         # frutcherman layout == matrix
 
-        Xv = [pos[k][0] for k in range(len(self.matrix))]
-        Yv = [pos[k][1] for k in range(len(self.matrix))]
+        Xv = [pos[k][0] for k in range(len(self.G.edges))]
+        Yv = [pos[k][1] for k in range(len(self.G.edges))]
         Xed = []
         Yed = []
         for edge in E:
