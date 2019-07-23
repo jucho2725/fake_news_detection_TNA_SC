@@ -102,7 +102,7 @@ class Measure():
             tmp = max_val - i
             X += tmp
         result = X / gg
-        print(result)
+        # print(result)
         return result
 
     #
@@ -123,7 +123,8 @@ class Measure():
 class Feature():
     def __init__(self, doc_path_list):
         self.doc_filenames = doc_path_list
-        self.df_tfidf = pd.read_csv(doc_path_list[0][:-20] + 'tfidf.csv', index_col=0)
+        # self.df_tfidf = pd.read_csv(doc_path_list[0][:-20] + 'tfidf.csv', index_col=0)
+        self.df_tfidf = pd.read_csv('data/tfidf.csv', index_col=0)
 
     def cal_tfidf(self):
         tfidf_mean = np.mean(self.df_tfidf['Tfidf'])
@@ -141,14 +142,14 @@ class Feature():
     def cal_net_feature(self, G):
         net = Measure(G)
         bet_val = net.get_Value()
-        common_neighbors = [len(list(nx.common_neighbors(net, u, v))) for u, v in G.edges]
+        common_neighbors = [len(list(nx.common_neighbors(G, u, v))) for u, v in G.edges]
         com_mean = np.mean(np.array(common_neighbors))
         com_var = np.var(np.array(common_neighbors))
         degree_sequence = sorted([d for n, d in G.degree()], reverse=True)
         core_count = len([i for i in degree_sequence if i > np.quantile(degree_sequence, 0.75)])
         return com_mean, com_var, core_count, bet_val,
 
-    def make_df(self, doc_path, label='fake'):
+    def make_df(self, doc_path, label):
         net = Graph()
         G, matrix = net.create_graph(doc_path, string_to_list=True)  # 이미 tfidf_reweight.csv 로 된 애들을 만들어놔서 그걸로 시작해야함
         tfidf_mean, tfidf_var = self.cal_tfidf()

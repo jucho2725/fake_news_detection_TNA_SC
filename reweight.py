@@ -79,14 +79,11 @@ class CorTfidf(Processing):
         :param corpus:
         :return:
         """
-        # wd = 'reweighted\\'
         vectorizer = TfidfVectorizer()
         vectorizer.fit(corpus)
         tfidf_result = vectorizer.transform(corpus)
         x = self.display_scores(vectorizer, tfidf_result)
-        # if not os.path.isdir(self.doc_filenames[0][:-20] + wd):
-        #     os.system('mkdir ' + self.doc_filenames[0][:-20] + wd)
-        x.to_csv('D:\\PythonProjects\\text_network_analysis\\tfidf.csv')
+        x.to_csv('data/tfidf.csv')
         return x
 
 
@@ -108,7 +105,8 @@ class Reweight(CorTfidf):
             for i in cooc_mat.index:
                 if tfidf.loc[n, 'Word'] in cooc_mat.loc[i, 'Linkage']:
                     redf.loc[i, 'Weight'] = redf.loc[i, 'Weight'] * tfidf.loc[n, 'Tfidf']
-        wd = 'reweighted\\'
+        # wd = 'reweighted\\'
+        wd = 'reweighted/'
         if not os.path.isdir(doc_name[:-20] + wd):
             os.system('mkdir ' + doc_name[:-20] + wd)
         rew_name = doc_name[:-20] + wd + doc_name[-20:-4] + '.csv'
