@@ -15,7 +15,6 @@ import nltk
 import numpy as np
 import pandas as pd
 import sklearn.metrics as metrics
-import tensorflow as tf
 from nltk import sent_tokenize, word_tokenize, pos_tag, Text
 from nltk.collocations import BigramCollocationFinder
 from nltk.corpus import stopwords
@@ -23,7 +22,6 @@ from nltk.corpus import webtext
 from nltk.corpus import wordnet as wn
 from nltk.metrics import BigramAssocMeasures
 from nltk.stem.wordnet import WordNetLemmatizer
-from tensorflow.python.data import Dataset
 
 
 class Processing():

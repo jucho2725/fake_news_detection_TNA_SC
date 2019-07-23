@@ -4,6 +4,18 @@ import time
 from reweight import CorTfidf, Reweight
 from features import Feature
 
+"""
+BEFORE YOU START
+    please make sure downloading data by nltk
+
+import nltk
+# nltk.download('wordnet')
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('stopwords')
+
+"""
+
 # prev_doc_path = 'D:\\PythonProjects\\text_network_analysis\\data'
 
 def get_doc_filenames(document_path):
@@ -17,21 +29,21 @@ def get_rew_filenames(document_path):
     """
     파일 이름 받기
     """
-    return [os.path.join(document_path, each)
-            for each in os.listdir(document_path)]
+    return [os.path.join(document_path[:], each)
+            for each in os.listdir(document_path[:])]
 
 def main():
     tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
-    # path_fake = 'data/false'
+    # path_fake = 'data/fake'
     # path_true = 'data/true'
-    path_fake = 'test/false'
-    path_true = 'test/true'
-    path_test = 'test/'
+    path_fake = 'test/fake/'
+    path_true = 'test/true/'
+    path = 'test/'
 
     startTime = time.time()
     # doc_path_list = get_doc_filenames(path_test)
-    doc_path_list_f = path_fake
-    doc_path_list_t = path_true
+    doc_path_list_f = get_doc_filenames(path_fake)
+    doc_path_list_t = get_doc_filenames(path_true)
     doc_path_list = doc_path_list_f + doc_path_list_t
 
     print("Get tfidf value from corpus")
@@ -58,9 +70,9 @@ def main():
     print("It took %d seconds" % (graphTime - rewTime))
 
     print("make all features and load all to dataframe ")
-    df = feature_model.make_df_from_dataset(label='test')
+    df = feature_model.make_df_from_dataset()
 
-    df.to_csv(path_test + 'result.csv')
+    df.to_csv(path + 'result.csv')
     print("Done")
     endTime = time.time()
     print("It took %d seconds" % (endTime - graphTime))

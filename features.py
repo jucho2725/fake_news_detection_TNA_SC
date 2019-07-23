@@ -170,12 +170,15 @@ class Feature():
 
         return feature_df_one
 
-    def make_df_from_dataset(self, label):
+    def make_df_from_dataset(self):
         idx_list = []
         row_list = []
-        for doc_path in self.doc_filenames:
-            idx_list.append(doc_path[-20:-4])
-            row_list.append(self.make_df(doc_path, label))
+        for doc_path in self.doc_filenames[:2]:
+            idx_list.append(doc_path[-20:-4]) # title of article
+            row_list.append(self.make_df(doc_path, label=0))
+        for doc_path in self.doc_filenames[2:]:
+            idx_list.append(doc_path[-20:-4])  # title of article
+            row_list.append(self.make_df(doc_path, label=1))
 
         feature_df = pd.DataFrame(row_list, columns=row_list[0].keys(), index=idx_list)
 
