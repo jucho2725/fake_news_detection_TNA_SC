@@ -1,7 +1,7 @@
 import os
 import time
 
-from reweight import CorTfidf, Reweight
+from reweight import Reweight
 from features import Feature
 
 """
@@ -34,11 +34,12 @@ def get_rew_filenames(document_path):
 
 def main():
     tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB']
-    # path_fake = 'data/fake'
-    # path_true = 'data/true'
-    path_fake = 'test/fake/'
-    path_true = 'test/true/'
-    path = 'test/'
+    path_fake = 'data/fake'
+    path_true = 'data/true'
+    path = 'data/'
+    # path_fake = 'test/fake/'
+    # path_true = 'test/true/'
+    # path = 'test/'
 
     startTime = time.time()
     # doc_path_list = get_doc_filenames(path_test)
@@ -47,12 +48,12 @@ def main():
     doc_path_list = doc_path_list_f + doc_path_list_t
 
     print("Get tfidf value from corpus")
-    reweighting_model = Reweight(tag_filter, doc_path_list=doc_path_list)
+    # reweighting_model = Reweight(tag_filter, doc_path_list=doc_path_list)
     tfidfTime = time.time()
     print("It took %d seconds" % (tfidfTime - startTime))
 
     print("Reweight all articles and save to .csv")
-    reweighting_model.get_docs_rew_csv() # 델이 reweighted 된 linkage 가 있는 각 기사의 csv 파일을 만들어줌
+    # reweighting_model.get_docs_rew_csv() # 델이 reweighted 된 linkage 가 있는 각 기사의 csv 파일을 만들어줌
     rewTime = time.time()
     print("It took %d seconds" % (rewTime - tfidfTime))
 
@@ -61,8 +62,8 @@ def main():
     print(" ")
 
     print("Make a graph and read tfidf result")
-    rew_f_list = get_rew_filenames(document_path=path_fake + 'reweighted/')
-    rew_t_list = get_rew_filenames(document_path=path_true + 'reweighted/')
+    rew_f_list = get_rew_filenames(document_path=path_fake + '/reweighted/')
+    rew_t_list = get_rew_filenames(document_path=path_true + '/reweighted/')
     rew_path_list = rew_f_list + rew_t_list
 
     feature_model = Feature(doc_path_list=rew_path_list) # init - 그래프 만들고 tfidf.csv 불러옴
