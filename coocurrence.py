@@ -78,10 +78,10 @@ class Processing():
         added_stopword = ['“', '”', '.', ',', '-', "—", "–", "'s", "n't", "''", ';', '&', "``", '?', "‘", "’"]
         results = []
 
-        for sentence in sentences:
+        for sent in sentences:
             wordsFiltered = []
             wordsStopped = []
-            for w in sentence:
+            for w in sent:
                 if w not in stopWords and w not in added_stopword and not w.isdigit():
                     wordsFiltered.append(w)
                 else:
@@ -91,6 +91,7 @@ class Processing():
         # print(results)
         return results
 
+<<<<<<< Updated upstream
     # 태깅 함수
 
     # apply_collocation 수정
@@ -117,6 +118,71 @@ class Processing():
                 continuous_chunk.append(named_entity)
                 current_chunk = []
         return continuous_chunk
+=======
+    # # 연어 합치기
+    # def collocation(self, contents):
+    #     for sent in contents:
+    #         for w in sent:
+    #             bcf = BigramCollocationFinder.from_words(sent)
+    #             filter_stop = lambda w: len(w) < 3
+    #             bcf.apply_word_filter(filter_stop)
+    #             apply_list = bcf.nbest(BigramAssocMeasures.likelihood_ratio, 4)
+    #
+    #
+    #     return col_list
+
+    # 태깅 함수
+
+    def apply_collocations(self, sentence):
+        set_colloc = set([("Donald", "Trump"), ("ABC", "News"), ("Hillary", "Clinton"),
+                          ("Chelsea", "Clinton"), ("Bill", "Clinton")])
+        list_bigrams = list(nltk.bigrams(sentence))
+        # print("list bigram is : {0}".format(list_bigrams))
+        # print(list_bigrams[0][0])
+        # print(list_bigrams[0][1])
+        set_bigrams = set(list_bigrams)
+        intersect = set_bigrams.intersection(set_colloc)
+        # print(set_colloc)
+        # print(set_bigrams)
+        #  No collocation in this sentence
+        if not intersect:
+            return sentence
+        # At least one collocation in this sentence
+        else:
+            new_sentence = []
+            set_words_iters = set()
+            # Create set of words of the collocations
+            for bigram in intersect:
+                set_words_iters.add(bigram[0])
+                set_words_iters.add(bigram[1])
+            # print(set_words_iters)
+            # print("**")
+            # Sentence beginning
+            if list_bigrams[0][0] not in set_words_iters:
+                new_sentence.append(list_bigrams[0][0])
+                begin = 0
+            else:
+                new_word = list_bigrams[0][0] + '_' + list_bigrams[0][1]
+                new_sentence.append(new_word)
+                begin = 1
+
+            for i in range(begin, len(list_bigrams)):
+                # print(new_sentence)
+                if list_bigrams[i][1] in set_words_iters and list_bigrams[i] in intersect:
+                    new_word = list_bigrams[i][0] + '_' + list_bigrams[i][1]
+                    new_sentence.append(new_word)
+                elif list_bigrams[i][1] not in set_words_iters:
+                    new_word = list_bigrams[i][1]
+                    new_sentence.append(new_word)
+            return new_sentence
+
+    def collocate_content(self, contents):
+        results = []
+        for sent in contents:
+            new_sent = self.apply_collocations(sent)
+            results.append(new_sent)
+        return results
+>>>>>>> Stashed changes
 
     def tag_content(self, sentences):
         """
@@ -125,8 +191,8 @@ class Processing():
         :return: (list) tagged words divided by each sentence
         """
         results = []
-        for sentence in sentences:
-            tagged_content = pos_tag(sentence)
+        for content in sentences:
+            tagged_content = pos_tag(content)
             results.append(tagged_content)
 
         return results
@@ -197,6 +263,7 @@ class Processing():
             text = open(filepath, encoding='utf-8').read()
         else:
             text = text
+<<<<<<< Updated upstream
 
         text = self.apply_collocations(text)
         lem_sents = self.lemma_text(text)
@@ -205,6 +272,15 @@ class Processing():
         sel_sents = self.select_results(tag_sents) # 단어 리스트 - 사용할 품사 종류 합의 필요
         cooc_mat = self.create_cooc_mat(sel_sents) # 단어간 연결 데이터프레임
         return sel_sents, cooc_mat
+=======
+        lem_cont = self.lemma_text(text)
+        stop_cont = self.stopword(lem_cont)
+        col_cont = self.collocate_content(stop_cont)
+        tag_cont = self.tag_content(col_cont)
+        sel_cont = self.select_results(tag_cont) # 단어 리스트
+        cooc_cont = self.create_cooc_mat(sel_cont) # 단어간 연결 데이터프레임
+        return sel_cont, cooc_cont
+>>>>>>> Stashed changes
 
 
 # """ 테스트 """

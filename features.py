@@ -157,6 +157,7 @@ class Feature():
         edge_num = self.cal_edge_num(matrix)
         com_mean, com_var, core_count, bet_val = self.cal_net_feature(G)
 
+
         feature_df_one = {'tfidf_mean': tfidf_mean,
                           'tfidf_var': tfidf_var,
                           'wt_mean': wt_mean,
@@ -166,7 +167,8 @@ class Feature():
                           'com_var': com_var,
                           'core_count': core_count,
                           'betweeness': bet_val,
-                          'label': label, 'index': doc_path[-20:-4]}
+                          'label': label, 'index': doc_path[-20:-4],
+                          }
 
         return feature_df_one
 
