@@ -11,6 +11,7 @@ source : https://m.blog.naver.com/PostView.nhn?blogId=kiddwannabe&logNo=22115631
 from collections import Counter, defaultdict
 from itertools import combinations
 import nltk
+
 # nltk.download('wordnet')
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger')
@@ -49,6 +50,7 @@ class Processing():
         lmtzr = WordNetLemmatizer()
         replace_data={"n't":'not'} #lemmatatization에서 제거 되고 싶지 않은 단어 추가
         for token, tag in pos_tag(tokens):
+
             # print("token :", token, "tag :", tag)
             if token in replace_data.keys():
                 # print("pass replace_Data: ",token)
@@ -116,7 +118,6 @@ class Processing():
                 current_chunk = []
         return continuous_chunk
 
-
     def tag_content(self, sentences):
         """
         Tag all words in content
@@ -173,7 +174,6 @@ class Processing():
                 else:
                     word_cooc_mat[(w1, w2)] += 1
                     # print(word_cooc_mat[(w1, w2)])
-
         # dict 타입인지 몰라서 확인해봄
         # print(word_cooc_mat.values())
         # print(word_cooc_mat.items())
@@ -197,6 +197,7 @@ class Processing():
             text = open(filepath, encoding='utf-8').read()
         else:
             text = text
+
         text = self.apply_collocations(text)
         lem_sents = self.lemma_text(text)
         stop_sents = self.stopword(lem_sents)
@@ -210,6 +211,7 @@ class Processing():
 
 # 어떤 태그들만 남길지
 # tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
+
 # example_text = "The Trump administration will n't delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
 # example_text2 = " NEW YORK — Staring down tightening polls both nationwide and in the battleground states, Hillary Clinton’s campaign manager Robby Mook on Monday circulated a private memo to donors, supporters and top volunteers that maps out the Democratic nominee’s various paths to the White House in November, paired with his analysis of Donald Trump’s own precarious path. “Here’s the story that no poll can tell: Hillary Clinton has many paths to 270 electoral votes, while Donald Trump has very few. Hillary is nearly certain to win 16 ‘ blue' states, including Washington D.C., which will garner her 191 electoral votes,” writes Mook in the nearly 2,000-word memo that was blasted out in the early evening, and which was obtained by POLITICO."
 # example_text3 = "Former President George H.W. Bush is bucking his party's presidential nominee and plans to vote for Hillary Clinton in November, according to a member of another famous political family, the Kennedys. Bush. 92. had intended to stay silent on the White House race between Clinton and Donald Trump, a sign in and of itself of his distaste for the GOP nominee. "
@@ -239,6 +241,7 @@ class Processing():
 # # print(tagged_results)
 # # print('***************************************')
 # #
+
 #
 # # #
 # # selected_results = N.select_results(tagged_results)
