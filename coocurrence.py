@@ -26,7 +26,6 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tree import Tree
 
 
-
 class Processing():
     def __init__(self, tag_filter):
         self.tag_map = defaultdict(lambda: wn.NOUN)
@@ -43,18 +42,23 @@ class Processing():
 
     # 문장 하나 lemmatization 함수
     def lemma_sentence(self, text):  # token에 is, 같은 애들을 be 로 변환 시키지 않음
+        '''
+        lemmatize a sentence. If the pos tag of a token starts with 'V', 'R, 'J',
+        It will be lemmatized to the word's origin (was -> be) (studied -> study)
+        :param text: (string) a sentence
+        :return: (list) list of tokens
+        '''
         results = []
         tokens = word_tokenize(text)
         # NER_chunk 함수 넣어주기 (tokens 단위?)
-        tokens = self.ner_chunk(tokens)  #-> pos tag / ne_chunk 포함
+        tokens = self.ner_chunk(tokens)  # -> pos tag / ne_chunk 포함
         lmtzr = WordNetLemmatizer()
-        replace_data={"n't":'not'} #lemmatatization에서 제거 되고 싶지 않은 단어 추가
+        replace_data = {"n't": 'not'}  # lemmatatization에서 제거 되고 싶지 않은 단어 추가
         for token, tag in pos_tag(tokens):
-
             # print("token :", token, "tag :", tag)
             if token in replace_data.keys():
                 # print("pass replace_Data: ",token)
-                token =token.replace(token,replace_data[token])
+                token = token.replace(token, replace_data[token])
                 # print("after replace: ",token)
             lemma = lmtzr.lemmatize(token, self.tag_map[tag[0]])
             # print(token, "=>", lemma)
@@ -63,6 +67,11 @@ class Processing():
 
     # 문서 전체 lemmatization 함수
     def lemma_text(self, text):
+        '''
+        lemmatize text
+        :param text: (string) raw text
+        :return: (list of list) tokenized and lemmatized sentences
+        '''
         # collocation 을 이 단에서 추가해야할 듯 (sent tokenize 되지 않도록)
         lemma_data = []
         sentences = sent_tokenize(text)
@@ -74,7 +83,13 @@ class Processing():
     # 불용어 처리 함수
     # 여기서부턴 string형태가 아니라 이중리스트 형태이므로 sentences 와 sentence 로 구분함
     def stopword(self, sentences):
-        stopWords = set(stopwords.words('english'))-set(['not'])
+        '''
+        remove stopwords from sentences.
+        Note that 'not' is remained due to represent negation
+        :param sentences: (list of list)
+        :return: (list of list)
+        '''
+        stopWords = set(stopwords.words('english')) - set(['not'])
         added_stopword = ['“', '”', '.', ',', '-', "—", "–", "'s", "n't", "''", ';', '&', "``", '?', "‘", "’"]
         results = []
 
@@ -91,11 +106,14 @@ class Processing():
         # print(results)
         return results
 
-<<<<<<< Updated upstream
     # 태깅 함수
 
     # apply_collocation 수정
-    def ner_chunk(self,tokens): #George H.W. Bush는 따로 작업
+    def ner_chunk(self, tokens):  # George H.W. Bush는 따로 작업
+        '''
+        :param tokens: list of tokens in one sentence
+        :return:
+        '''
         chunked = ne_chunk(pos_tag(tokens), binary=True)
         # prev = None
         continuous_chunk = []
@@ -118,71 +136,6 @@ class Processing():
                 continuous_chunk.append(named_entity)
                 current_chunk = []
         return continuous_chunk
-=======
-    # # 연어 합치기
-    # def collocation(self, contents):
-    #     for sent in contents:
-    #         for w in sent:
-    #             bcf = BigramCollocationFinder.from_words(sent)
-    #             filter_stop = lambda w: len(w) < 3
-    #             bcf.apply_word_filter(filter_stop)
-    #             apply_list = bcf.nbest(BigramAssocMeasures.likelihood_ratio, 4)
-    #
-    #
-    #     return col_list
-
-    # 태깅 함수
-
-    def apply_collocations(self, sentence):
-        set_colloc = set([("Donald", "Trump"), ("ABC", "News"), ("Hillary", "Clinton"),
-                          ("Chelsea", "Clinton"), ("Bill", "Clinton")])
-        list_bigrams = list(nltk.bigrams(sentence))
-        # print("list bigram is : {0}".format(list_bigrams))
-        # print(list_bigrams[0][0])
-        # print(list_bigrams[0][1])
-        set_bigrams = set(list_bigrams)
-        intersect = set_bigrams.intersection(set_colloc)
-        # print(set_colloc)
-        # print(set_bigrams)
-        #  No collocation in this sentence
-        if not intersect:
-            return sentence
-        # At least one collocation in this sentence
-        else:
-            new_sentence = []
-            set_words_iters = set()
-            # Create set of words of the collocations
-            for bigram in intersect:
-                set_words_iters.add(bigram[0])
-                set_words_iters.add(bigram[1])
-            # print(set_words_iters)
-            # print("**")
-            # Sentence beginning
-            if list_bigrams[0][0] not in set_words_iters:
-                new_sentence.append(list_bigrams[0][0])
-                begin = 0
-            else:
-                new_word = list_bigrams[0][0] + '_' + list_bigrams[0][1]
-                new_sentence.append(new_word)
-                begin = 1
-
-            for i in range(begin, len(list_bigrams)):
-                # print(new_sentence)
-                if list_bigrams[i][1] in set_words_iters and list_bigrams[i] in intersect:
-                    new_word = list_bigrams[i][0] + '_' + list_bigrams[i][1]
-                    new_sentence.append(new_word)
-                elif list_bigrams[i][1] not in set_words_iters:
-                    new_word = list_bigrams[i][1]
-                    new_sentence.append(new_word)
-            return new_sentence
-
-    def collocate_content(self, contents):
-        results = []
-        for sent in contents:
-            new_sent = self.apply_collocations(sent)
-            results.append(new_sent)
-        return results
->>>>>>> Stashed changes
 
     def tag_content(self, sentences):
         """
@@ -211,8 +164,8 @@ class Processing():
         for sentence in sentences:
             selection = []
             # 단어를 lex, tag 를 cat 이라 표현
-            for lex, cat in sentence:
-                if cat in self.tag_filter:
+            for lex, tag in sentence:
+                if tag in self.tag_filter:
                     # tag 말고 안에 단어 lex 만 남겨야함
                     selection.append(lex)
 
@@ -224,7 +177,7 @@ class Processing():
     def create_cooc_mat(self, sentences):
         """
         Create Co-Occurrence Matrix
-        :param sentences: (list of list) processed data
+        :param sentences: (list of list) processed sentences.
         :return: (list) The number of times two words occur together in each sentence in a document. [(word1, word2), count]
         """
         word_cooc_mat = Counter()
@@ -259,29 +212,23 @@ class Processing():
         return sorted_data
 
     def cooc(self, filepath=None, text=None):
+        '''
+        Make cooc matrix.
+        :param filepath: (default=None) If a input is saved as file, add path
+        :param text: (default=None) If a input is just a raw text, add text
+        :return: (Dataframe) cooc matrix represented by dataframe format
+        '''
         if filepath is not None:
             text = open(filepath, encoding='utf-8').read()
         else:
             text = text
-<<<<<<< Updated upstream
-
         text = self.apply_collocations(text)
         lem_sents = self.lemma_text(text)
         stop_sents = self.stopword(lem_sents)
         tag_sents = self.tag_content(stop_sents)
-        sel_sents = self.select_results(tag_sents) # 단어 리스트 - 사용할 품사 종류 합의 필요
-        cooc_mat = self.create_cooc_mat(sel_sents) # 단어간 연결 데이터프레임
+        sel_sents = self.select_results(tag_sents)  # 단어 리스트 - 사용할 품사 종류 합의 필요
+        cooc_mat = self.create_cooc_mat(sel_sents)  # 단어간 연결 데이터프레임
         return sel_sents, cooc_mat
-=======
-        lem_cont = self.lemma_text(text)
-        stop_cont = self.stopword(lem_cont)
-        col_cont = self.collocate_content(stop_cont)
-        tag_cont = self.tag_content(col_cont)
-        sel_cont = self.select_results(tag_cont) # 단어 리스트
-        cooc_cont = self.create_cooc_mat(sel_cont) # 단어간 연결 데이터프레임
-        return sel_cont, cooc_cont
->>>>>>> Stashed changes
-
 
 # """ 테스트 """
 
