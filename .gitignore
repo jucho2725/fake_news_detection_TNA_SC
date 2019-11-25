@@ -175,3 +175,7 @@ $RECYCLE.BIN/
 
 # plt files
 .png
+
+# floobits files
+.floo
+.flooignore
