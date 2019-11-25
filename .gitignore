@@ -175,3 +175,10 @@ $RECYCLE.BIN/
 
 # plt files
 .png
+
+# floobits files
+.floo
+.flooignore
+
+# ignore BigDAS data
+BigDAS_data/
