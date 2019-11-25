@@ -1,4 +1,4 @@
-# Fake New Detection_Text Network Analysis and Social Context
+# Fake News Detection_Text Network Analysis and Social Context
 
 
 
