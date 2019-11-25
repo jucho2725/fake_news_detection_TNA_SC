@@ -20,85 +20,74 @@ class Measure():
         self.graph = graph
 
     def cal_Cent(self, g):
-        # deg_cent = nx.algorithms.degree_centrality(g)
-        # clo_cent = nx.algorithms.closeness_centrality(g)
+        """
+        TO DO : get other features if available
+        :param g: (Graph)
+        :return: caculated features
+        """
+        deg_cent = nx.algorithms.degree_centrality(g)
+        clo_cent = nx.algorithms.closeness_centrality(g)
         bet_cent = nx.algorithms.betweenness_centrality(g)
-        # eig_cent = nx.algorithms.eigenvector_centrality_numpy(g)
-        # info_cent = nx.algorithms.information_centrality(g)
-        # list_deg = [k for k in deg_cent.values()]
-        # self.list_deg = list_deg
-        # list_clo = [k for k in clo_cent.values()]
-        # self.list_clo = list_clo
+        eig_cent = nx.algorithms.eigenvector_centrality_numpy(g)
+        info_cent = nx.algorithms.information_centrality(g)
+
+
+        list_deg = [k for k in deg_cent.values()]
+        list_clo = [k for k in clo_cent.values()]
         list_bet = [k for k in bet_cent.values()]
-        self.list_bet = list_bet
 
-        # return deg_cent
+        return list_deg, list_clo, list_bet
 
-    def get_Info(self):
+    def get_Info(self): # will be deprecated
         summary_g = nx.info(self.graph)
         print(summary_g)
         return summary_g
 
-    def create_Dataframe(self):
-        """
-        :return: (dataframe) table of info of each nodes
-        """
-        word = pd.Series(self.deg_cent.keys())
-        deg_val = pd.Series(self.deg_cent.values())
-        bet_val = pd.Series(self.bet_cent.values())
-        clo_val = pd.Series(self.clo_cent.values())
-        dataframe = pd.DataFrame({'Word': word, 'Betweeness': bet_val, 'Degree': deg_val,
-                                  'Closeness': clo_val})
-        return dataframe
 
-    def deg_GroupVal(self):
+    def deg_GroupVal(self, list_deg):
         """
         :param (list) list of values:
         Cd = Summation(Max - i th value) / (g-2)(g-1)
         :return: (float)  grouped value
         """
         X = 0
-        max_val = max(self.list_deg)
-        g = len(self.list_deg)
+        max_val = max(list_deg)
+        g = len(list_deg)
         gg = (g - 2) * (g - 1)
-        print('maximum value of degree cetrality is : {0}'.format(max_val))
-        for i in self.list_deg:
+        # print('maximum value of degree cetrality is : {0}'.format(max_val))
+        for i in list_deg:
             tmp = max_val - i
             X += tmp
         result = X / gg
-        print(result)
         return result
 
-    def clo_GroupVal(self):
+    def clo_GroupVal(self, list_clo):
         """
         :param (list) list of values:
         Cd = Summation(Max - i th value) / ((g-2)(g-1)/(2g-3))
         :return: (float)  grouped value
         """
         X = 0
-        max_val = max(self.list_clo)
-        g = len(self.list_clo)
+        max_val = max(list_clo)
+        g = len(list_clo)
         gg = ((g - 2) * (g - 1)) / (2 * g - 3)
-        print('maximum value of closeness cetrality is : {0}'.format(max_val))
-        for i in self.list_clo:
+        for i in list_clo:
             tmp = max_val - i
             X += tmp
         result = X / gg
-        print(result)
         return result
 
-    def bet_GroupVal(self):  ###########
+    def bet_GroupVal(self, list_bet):
         """
         :param (list) list of values:
         Cd = Summation(Max - i th value) / ((g-2)^2(g-1)/2)
         :return: (float)  grouped value
         """
         X = 0
-        max_val = max(self.list_bet)
-        g = len(self.list_bet)
+        max_val = max(list_bet)
+        g = len(list_bet)
         gg = (pow((g - 2), 2) * (g - 1)) / (2)
-        # print('maximum value of betweenness cetrality is : {0}'.format(max_val))
-        for i in self.list_bet:
+        for i in list_bet:
             tmp = max_val - i
             X += tmp
         result = X / gg
@@ -112,19 +101,25 @@ class Measure():
         :return: (float) values
         """
         # info = self.get_Info()
-        start = self.cal_Cent(self.graph)
-        # deg_val = self.deg_GroupVal()
-        # clo_val = self.clo_GroupVal()
-        bet_val = self.bet_GroupVal()
+        list_deg, list_clo, list_bet = self.cal_Cent(self.graph)
+        deg_val = self.deg_GroupVal(list_deg)
+        clo_val = self.clo_GroupVal(list_clo)
+        bet_val = self.bet_GroupVal(list_bet)
 
-        return bet_val
+        return deg_val, clo_val, bet_val
 
+    def cal_net_features(self):
+        common_neighbors = [len(list(nx.common_neighbors(self.graph, u, v))) for u, v in self.graph.edges]
+        com_mean = np.mean(np.array(common_neighbors))
+        com_var = np.var(np.array(common_neighbors))
+        degree_sequence = sorted([d for n, d in self.graph.degree()], reverse=True)
+        core_count = len([i for i in degree_sequence if i > np.quantile(degree_sequence, 0.75)])
+        com_mean, com_var, core_count
 
 class Feature():
     def __init__(self, doc_path_list):
         self.doc_filenames = doc_path_list
-        # self.df_tfidf = pd.read_csv(doc_path_list[0][:-20] + 'tfidf.csv', index_col=0)
-        self.df_tfidf = pd.read_csv('data/tfidf.csv', index_col=0)
+        # self.df_tfidf = pd.read_csv('data/tfidf.csv', index_col=0)
 
     def cal_tfidf(self):
         tfidf_mean = np.mean(self.df_tfidf['Tfidf'])
@@ -141,13 +136,9 @@ class Feature():
 
     def cal_net_feature(self, G):
         net = Measure(G)
-        bet_val = net.get_Value()
-        common_neighbors = [len(list(nx.common_neighbors(G, u, v))) for u, v in G.edges]
-        com_mean = np.mean(np.array(common_neighbors))
-        com_var = np.var(np.array(common_neighbors))
-        degree_sequence = sorted([d for n, d in G.degree()], reverse=True)
-        core_count = len([i for i in degree_sequence if i > np.quantile(degree_sequence, 0.75)])
-        return com_mean, com_var, core_count, bet_val,
+        deg_val, clo_val, bet_val = net.get_Value()
+        com_mean, com_var, core_count = net.cal_net_features()
+        return com_mean, com_var, core_count, deg_val, clo_val, bet_val
 
     def make_df(self, doc_path, label):
         net = Graph()
