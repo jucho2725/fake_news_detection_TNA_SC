@@ -2,7 +2,7 @@
 Data processing and creating Co-Occurrence matrix
 
 May 18th, 2019
-author: Jin Uk, Cho
+author: Jin Uk, Cho / hanseok, Oh
 
 source : https://m.blog.naver.com/PostView.nhn?blogId=kiddwannabe&logNo=221156319157&referrerCode=4&proxyReferer=http://m.blog.naver.com/SympathyHistoryList.nhn?blogId%3Dkiddwannabe%26logNo%3D221156319157%26createTime%3D1512488368000
 
@@ -56,16 +56,18 @@ class Processing():
         # add any phrase here
         return sentence
 
-    # 문장 하나 lemmatization 함수
     def lemma_sentence(self, text):  # token에 is, 같은 애들을 be 로 변환 시키지 않음
+        '''
+        :desc: lemmatize a one sentence
+        :param text: a raw sentence
+        :return: a lemmatized sentence
+        '''
         results = []
         tokens = word_tokenize(text)
-        # NER_chunk 함수 넣어주기 (tokens 단위?)
-        tokens = self.ner_chunk(tokens)  #-> pos tag / ne_chunk 포함
+        tokens = self.ner_chunk(tokens)  #-> pos tag / ner_chunk 포함
         lmtzr = WordNetLemmatizer()
         replace_data={"n't":'not'} #lemmatatization에서 제거 되고 싶지 않은 단어 추가
         for token, tag in pos_tag(tokens):
-
             # print("token :", token, "tag :", tag)
             if token in replace_data.keys():
                 # print("pass replace_Data: ",token)
@@ -76,9 +78,12 @@ class Processing():
             results.append(lemma)
         return results
 
-    # 문서 전체 lemmatization 함수
     def lemma_text(self, text):
-        # collocation 을 이 단에서 추가해야할 듯 (sent tokenize 되지 않도록)
+        '''
+        :param text: a document with several sentences
+        :return: a document with lemmatized sentences
+        '''
+        # collocation 을 이 단에서 추가해야할 듯 (sent tokenize 되지 않도록) => apply_collocation 함수를 처음에 적용 (11/26)
         lemma_data = []
         sentences = sent_tokenize(text)
         for sent in sentences:
@@ -86,10 +91,13 @@ class Processing():
             lemma_data.append(lemma_sent)
         return lemma_data
 
-    # 불용어 처리 함수
-    # 여기서부턴 string형태가 아니라 이중리스트 형태이므로 sentences 와 sentence 로 구분함
     def stopword(self, sentences):
+        '''
+        :param sentences: sentences with stop words, doubly list type
+        :return: sentences without stop words
+        '''
         stopWords = set(stopwords.words('english'))-set(['not'])
+        # To do: using re module to make clean code
         added_stopword = ['“', '”', '.', ',', '-', "—", "–", "'s", "n't", "''", ';', '&', "``", '?', "‘", "’"]
         results = []
 
@@ -97,25 +105,22 @@ class Processing():
             wordsFiltered = []
             wordsStopped = []
             for w in sentence:
-                if w not in stopWords and w not in added_stopword and not w.isdigit():
+                if ((w not in stopWords) and (w not in added_stopword) and (not w.isdigit())):
                     wordsFiltered.append(w)
                 else:
                     wordsStopped.append(w)
             results.append(wordsFiltered)
-
-        # print(results)
         return results
 
     # 태깅 함수
-
-    # apply_collocation 수정
     def ner_chunk(self,tokens): #George H.W. Bush는 따로 작업
+        '''
+        :param tokens: separated tokens like 'White', 'House'
+        :return: bridged tokens like 'White_House'
+        '''
         chunked = ne_chunk(pos_tag(tokens), binary=True)
-        # prev = None
         continuous_chunk = []
         current_chunk = []
-        # print("gcc_text in :", text)
-        # print("gcc chunked in : ",chunked )
         for i in chunked:
             if type(i) == Tree:
                 current_chunk.append("_".join([token for token, pos in i.leaves()]))
@@ -146,7 +151,6 @@ class Processing():
 
         return results
 
-    # 태그 결과에서 필터링하는 함수
     def select_results(self, sentences):
         """
         Select word by filtering certain tags
@@ -154,7 +158,6 @@ class Processing():
         :param tag_filter: (list) tags which should be left
         :return: (list) words divided by each sentence
         """
-
         selected_results = []
 
         for sentence in sentences:
@@ -169,7 +172,6 @@ class Processing():
                 selected_results.append(selection)
         return selected_results
 
-    # Co-occurence matrix 생성 함수
     def create_cooc_mat(self, sentences):
         """
         Create Co-Occurrence Matrix
@@ -221,6 +223,7 @@ class Processing():
         tag_sents = self.tag_content(stop_sents)
         sel_sents = self.select_results(tag_sents)  # 단어 리스트
         cooc_mat = self.create_cooc_mat(sel_sents)  # 단어간 연결 데이터프레임
+        # print("before df:",len(cooc_mat))
 
         first_class = MergeColloc(cooc_mat)
         df = first_class.df
@@ -228,7 +231,6 @@ class Processing():
             # 추가수정- duplicated word 제대로 형성 위해서 다시 선언
             c = MergeColloc(cooc_mat)
 
-            # findindex 자체를 바꿀 가능성 생각해보기
             colloc_index, no_colloc_index, _ = c.findIndex(colloc_word, df=df)
             duplicated_word, _ = c.findLinkageWord(colloc_word, df=df)
 
@@ -246,13 +248,18 @@ class Processing():
                 [ast.literal_eval(str(linkage).replace(colloc_word.split('_')[0], colloc_word)) for linkage in
                  no_colloc_df.iloc[:, 0]], index=no_colloc_df.index)
 
-            merged_mat = pd.concat([colloc_df, no_colloc_df, d])
+            df = pd.concat([colloc_df, no_colloc_df, d])
 
         if savepath is not None:
-            merged_mat.to_csv(savepath)
+            # print("after df check:",len(df))
+            df.to_csv(savepath)
 
         return sel_sents, cooc_mat
 
 
-
-
+# if __name__=='__main__':
+#     p = Processing()
+#     df = pd.read_csv('sample_data/data_1031_preprocessed.tsv',sep='\t')
+#     # print("df check:",df.head())
+#     for index,temp in enumerate(df.iloc[:20,0]):
+#         p.cooc(text= temp,savepath='{}.csv'.format(index))

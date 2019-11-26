@@ -1,10 +1,32 @@
+"""
+re-arragne Co-Occurrence matrix
+
+Nov 26th, 2019
+author: Hanseok, Oh
+
+"""
 import ast
+
+def strToList(df):
+    '''
+    desc : Changing df['linkage'] data type from string to list.
+    '''
+    try :
+        df['Linkage']= [ast.literal_eval(str) for str in df.iloc[:,0]]
+    except:
+        pass
+    return df
 
 class MergeColloc():
     def __init__(self, df):
         self.df = df
         # Linkage : string type에서 형성
-        temp_list = [i for i in set(sum([ast.literal_eval(s) for s in self.df.iloc[:, 0] if "_" in s], [])) if '_' in i]
+        # for i in self.df.iloc[:10,0]:
+        #     temp =str(i)
+
+        temp_list = [i for i in set(sum([s for s in self.df.iloc[:, 0] if "_" in str(s)], [])) if '_' in i]
+        # temp_list = [i for i in set(sum([ast.literal_eval(s) for s in self.df.iloc[:, 0] if "_" in s], [])) if '_' in i]
+
         # 두 개의 단어로만 형성된 연어만 취급
         self.colloc_words = [word for word in temp_list if len(word.split('_')) == 2]
         # print("colloc_words in corpus: ",self.colloc_words)
@@ -71,9 +93,6 @@ class MergeColloc():
         no_colloc_index = [i for i in total_index if i not in colloc_index]
 
         return colloc_index, no_colloc_index, nothing_index
-
-        ### 0915 수정
-        # 수정 필요
 
     def findLinkageWord(self, colloc_word, df=[]):
         '''
