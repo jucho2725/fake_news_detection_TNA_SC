@@ -223,10 +223,8 @@ class Processing():
         tag_sents = self.tag_content(stop_sents)
         sel_sents = self.select_results(tag_sents)  # 단어 리스트
         cooc_mat = self.create_cooc_mat(sel_sents)  # 단어간 연결 데이터프레임
-        print("cooc_mat:",len(cooc_mat),cooc_mat)
-        # for index,data in enumerate(cooc_mat.iloc[:5,:]):
-            # print("data:",data)
-            # data.to_csv('origin_{}.csv'.format(index))
+        # print("before df:",len(cooc_mat))
+
         first_class = MergeColloc(cooc_mat)
         df = first_class.df
         for index, colloc_word in enumerate(first_class.colloc_words):
@@ -253,8 +251,15 @@ class Processing():
             df = pd.concat([colloc_df, no_colloc_df, d])
 
         if savepath is not None:
-            print("after df check:",len(df))
+            # print("after df check:",len(df))
             df.to_csv(savepath)
 
         return sel_sents, cooc_mat
 
+
+if __name__=='__main__':
+    p = Processing()
+    df = pd.read_csv('sample_data/data_1031_preprocessed.tsv',sep='\t')
+    # print("df check:",df.head())
+    for index,temp in enumerate(df.iloc[:20,0]):
+        p.cooc(text= temp,savepath='{}.csv'.format(index))
