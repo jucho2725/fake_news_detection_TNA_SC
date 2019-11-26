@@ -3,12 +3,11 @@ import time
 
 from reweight import Reweight
 from features import Feature
+import nltk
 
 """
-BEFORE YOU START
-    please make sure downloading data by nltk
+BEFORE YOU START please make sure downloading data by nltk
 
-import nltk
 # nltk.download('wordnet')
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger')

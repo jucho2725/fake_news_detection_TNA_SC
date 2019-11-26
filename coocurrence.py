@@ -6,12 +6,13 @@ author: Jin Uk, Cho
 
 source : https://m.blog.naver.com/PostView.nhn?blogId=kiddwannabe&logNo=221156319157&referrerCode=4&proxyReferer=http://m.blog.naver.com/SympathyHistoryList.nhn?blogId%3Dkiddwannabe%26logNo%3D221156319157%26createTime%3D1512488368000
 
+last update : Nov 26th, 2019
+
 """
 
 from collections import Counter, defaultdict
 from itertools import combinations
 import nltk
-
 # nltk.download('wordnet')
 # nltk.download('punkt')
 # nltk.download('averaged_perceptron_tagger')
@@ -19,46 +20,56 @@ import nltk
 # nltk.download('maxent_ne_chunker')
 # nltk.download('words')
 import pandas as pd
+import os
+import ast
+
 from nltk import sent_tokenize, word_tokenize, pos_tag, ne_chunk
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet as wn
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tree import Tree
 
+from merge_colloc import MergeColloc
+
+
+def strToList(df):
+    '''
+    desc : Changing df['linkage'] data type from string to list.
+    '''
+    try :
+        df['Linkage']= [ast.literal_eval(str) for str in df.iloc[:,0]]
+    except:
+        pass
+    return df
 
 class Processing():
-    def __init__(self, tag_filter):
+    def __init__(self):
         self.tag_map = defaultdict(lambda: wn.NOUN)
         self.tag_map['J'] = wn.ADJ
         self.tag_map['V'] = wn.VERB
         self.tag_map['R'] = wn.ADV
-        self.tag_filter = tag_filter
 
     @staticmethod
     def apply_collocations(sentence):
         sentence = sentence.replace("George H.W. Bush", "George_H.W._Bush")
+        sentence = sentence.replace("Donald J. Trump", "Donald_J._Trump")
         # add any phrase here
         return sentence
 
     # 문장 하나 lemmatization 함수
     def lemma_sentence(self, text):  # token에 is, 같은 애들을 be 로 변환 시키지 않음
-        '''
-        lemmatize a sentence. If the pos tag of a token starts with 'V', 'R, 'J',
-        It will be lemmatized to the word's origin (was -> be) (studied -> study)
-        :param text: (string) a sentence
-        :return: (list) list of tokens
-        '''
         results = []
         tokens = word_tokenize(text)
         # NER_chunk 함수 넣어주기 (tokens 단위?)
-        tokens = self.ner_chunk(tokens)  # -> pos tag / ne_chunk 포함
+        tokens = self.ner_chunk(tokens)  #-> pos tag / ne_chunk 포함
         lmtzr = WordNetLemmatizer()
-        replace_data = {"n't": 'not'}  # lemmatatization에서 제거 되고 싶지 않은 단어 추가
+        replace_data={"n't":'not'} #lemmatatization에서 제거 되고 싶지 않은 단어 추가
         for token, tag in pos_tag(tokens):
+
             # print("token :", token, "tag :", tag)
             if token in replace_data.keys():
                 # print("pass replace_Data: ",token)
-                token = token.replace(token, replace_data[token])
+                token =token.replace(token,replace_data[token])
                 # print("after replace: ",token)
             lemma = lmtzr.lemmatize(token, self.tag_map[tag[0]])
             # print(token, "=>", lemma)
@@ -67,11 +78,6 @@ class Processing():
 
     # 문서 전체 lemmatization 함수
     def lemma_text(self, text):
-        '''
-        lemmatize text
-        :param text: (string) raw text
-        :return: (list of list) tokenized and lemmatized sentences
-        '''
         # collocation 을 이 단에서 추가해야할 듯 (sent tokenize 되지 않도록)
         lemma_data = []
         sentences = sent_tokenize(text)
@@ -83,20 +89,14 @@ class Processing():
     # 불용어 처리 함수
     # 여기서부턴 string형태가 아니라 이중리스트 형태이므로 sentences 와 sentence 로 구분함
     def stopword(self, sentences):
-        '''
-        remove stopwords from sentences.
-        Note that 'not' is remained due to represent negation
-        :param sentences: (list of list)
-        :return: (list of list)
-        '''
-        stopWords = set(stopwords.words('english')) - set(['not'])
+        stopWords = set(stopwords.words('english'))-set(['not'])
         added_stopword = ['“', '”', '.', ',', '-', "—", "–", "'s", "n't", "''", ';', '&', "``", '?', "‘", "’"]
         results = []
 
-        for sent in sentences:
+        for sentence in sentences:
             wordsFiltered = []
             wordsStopped = []
-            for w in sent:
+            for w in sentence:
                 if w not in stopWords and w not in added_stopword and not w.isdigit():
                     wordsFiltered.append(w)
                 else:
@@ -109,11 +109,7 @@ class Processing():
     # 태깅 함수
 
     # apply_collocation 수정
-    def ner_chunk(self, tokens):  # George H.W. Bush는 따로 작업
-        '''
-        :param tokens: list of tokens in one sentence
-        :return:
-        '''
+    def ner_chunk(self,tokens): #George H.W. Bush는 따로 작업
         chunked = ne_chunk(pos_tag(tokens), binary=True)
         # prev = None
         continuous_chunk = []
@@ -144,8 +140,8 @@ class Processing():
         :return: (list) tagged words divided by each sentence
         """
         results = []
-        for content in sentences:
-            tagged_content = pos_tag(content)
+        for sentence in sentences:
+            tagged_content = pos_tag(sentence)
             results.append(tagged_content)
 
         return results
@@ -165,7 +161,7 @@ class Processing():
             selection = []
             # 단어를 lex, tag 를 cat 이라 표현
             for lex, tag in sentence:
-                if tag in self.tag_filter:
+                if tag.startswith('V') or tag.startswith('N') or tag.startswith('R') or tag.startswith('J') :
                     # tag 말고 안에 단어 lex 만 남겨야함
                     selection.append(lex)
 
@@ -177,7 +173,7 @@ class Processing():
     def create_cooc_mat(self, sentences):
         """
         Create Co-Occurrence Matrix
-        :param sentences: (list of list) processed sentences.
+        :param sentences: (list of list) processed data
         :return: (list) The number of times two words occur together in each sentence in a document. [(word1, word2), count]
         """
         word_cooc_mat = Counter()
@@ -193,11 +189,6 @@ class Processing():
                 else:
                     word_cooc_mat[(w1, w2)] += 1
                     # print(word_cooc_mat[(w1, w2)])
-        # dict 타입인지 몰라서 확인해봄
-        # print(word_cooc_mat.values())
-        # print(word_cooc_mat.items())
-        # print(word_cooc_mat.elements())
-        # print(word_cooc_mat.keys())
 
         # list_key_value = [[k,v] for k, v in word_cooc_mat.items()]
 
@@ -211,12 +202,14 @@ class Processing():
         # return list_key_value
         return sorted_data
 
-    def cooc(self, filepath=None, text=None):
+    def cooc(self, filepath=None, text=None, savepath=None):
         '''
         Make cooc matrix.
         :param filepath: (default=None) If a input is saved as file, add path
         :param text: (default=None) If a input is just a raw text, add text
-        :return: (Dataframe) cooc matrix represented by dataframe format
+        :return:
+        (List) list of words occur in the text
+        (Dataframe) cooc matrix represented by dataframe format
         '''
         if filepath is not None:
             text = open(filepath, encoding='utf-8').read()
@@ -226,56 +219,40 @@ class Processing():
         lem_sents = self.lemma_text(text)
         stop_sents = self.stopword(lem_sents)
         tag_sents = self.tag_content(stop_sents)
-        sel_sents = self.select_results(tag_sents)  # 단어 리스트 - 사용할 품사 종류 합의 필요
+        sel_sents = self.select_results(tag_sents)  # 단어 리스트
         cooc_mat = self.create_cooc_mat(sel_sents)  # 단어간 연결 데이터프레임
+
+        first_class = MergeColloc(cooc_mat)
+        df = first_class.df
+        for index, colloc_word in enumerate(first_class.colloc_words):
+            # 추가수정- duplicated word 제대로 형성 위해서 다시 선언
+            c = MergeColloc(cooc_mat)
+
+            # findindex 자체를 바꿀 가능성 생각해보기
+            colloc_index, no_colloc_index, _ = c.findIndex(colloc_word, df=df)
+            duplicated_word, _ = c.findLinkageWord(colloc_word, df=df)
+
+            # 여러 colloc_word에 대해서 변경을 계속 축적하려면 row 단위가 아닌 index 단위 변경이 필요함
+            a = strToList(df).loc[colloc_index, :]
+            b = strToList(df).loc[no_colloc_index, :]
+
+            # colloc, no_colloc index가 둘다 없는 index 들
+            d = strToList(df).loc[[index for index in df.index if index not in colloc_index + no_colloc_index], :]
+
+            colloc_df, no_colloc_df = c.SumDropAll(colloc_word, duplicated_word, a, b)
+
+            # 연어 처리하는 일반화된 규칙을 고민해봐야함
+            no_colloc_df.iloc[:, 0] = pd.Series(
+                [ast.literal_eval(str(linkage).replace(colloc_word.split('_')[0], colloc_word)) for linkage in
+                 no_colloc_df.iloc[:, 0]], index=no_colloc_df.index)
+
+            merged_mat = pd.concat([colloc_df, no_colloc_df, d])
+
+        if savepath is not None:
+            merged_mat.to_csv(savepath)
+
         return sel_sents, cooc_mat
 
-# """ 테스트 """
 
-# 어떤 태그들만 남길지
-# tag_filter = ['NNP', 'NN', 'NNPS', 'NNS', 'VBG', 'VBP', 'VB', 'RB', 'JJ']
 
-# example_text = "The Trump administration will n't delay tariffs on cars and car part imports for up to six months as it negotiates trade deals with the European Union and Japan. In a proclamation Friday, Trump said he directed U.S.Trade Representative Robert Lighthizer to seek agreements to “address the threatened impairment” of national security from car imports. Trump could choose to move forward with tariffs during the talks. “United States defense and military superiority depend on the competitiveness of our automobile industry and the research and development that industry generates,” White House press secretary Sarah Huckabee Sanders said in a statement. “The negotiation process will be led by United States Trade Representative Robert Lighthizer and, if agreements are not reached within 180 days, the President will determine whether and what further action needs to be taken."
-# example_text2 = " NEW YORK — Staring down tightening polls both nationwide and in the battleground states, Hillary Clinton’s campaign manager Robby Mook on Monday circulated a private memo to donors, supporters and top volunteers that maps out the Democratic nominee’s various paths to the White House in November, paired with his analysis of Donald Trump’s own precarious path. “Here’s the story that no poll can tell: Hillary Clinton has many paths to 270 electoral votes, while Donald Trump has very few. Hillary is nearly certain to win 16 ‘ blue' states, including Washington D.C., which will garner her 191 electoral votes,” writes Mook in the nearly 2,000-word memo that was blasted out in the early evening, and which was obtained by POLITICO."
-# example_text3 = "Former President George H.W. Bush is bucking his party's presidential nominee and plans to vote for Hillary Clinton in November, according to a member of another famous political family, the Kennedys. Bush. 92. had intended to stay silent on the White House race between Clinton and Donald Trump, a sign in and of itself of his distaste for the GOP nominee. "
-# # text = open("./data/fake/1247033108723070.txt", encoding='utf-8-sig').read()
-# # print(text)
-# #
-# # my_sent = "WASHINGTON -- In the wake of a string of abuses by New York police officers in the 1990s, Loretta E. Lynch, the top federal prosecutor in Brooklyn, spoke forcefully about the pain of a broken trust that African-Americans felt and said the responsibility for repairing generations of miscommunication and mistrust fell to law enforcement."
-# # txt = "Barack Obama is a great person and so is Michelle Obama."
-# #
-# N = Processing(tag_filter)
-# # lemed_content = N.lemma_text(text)
-# # lemed_content = N.lemma_text(example_text3)
-# # print(example_text3)
-# # print(lemed_content)
-# print(example_text3)
-# N.cooc(text=example_text3)
-# # print(example_text3.replace('George H.W. Bush','Geogre_H.W._Bush'))
-#
-# #
-# # stopped_content = N.stopword(lemed_content)
-# # print(stopped_content)
-# # collocated_content = N.collocate_content(stopped_content)
-# # print(collocated_content)
-# #
-# # tagged_results = N.tag_content(collocated_content)
-# # tagged_results = N.tag_content(stopped_content)
-# # print(tagged_results)
-# # print('***************************************')
-# #
 
-#
-# # #
-# # selected_results = N.select_results(tagged_results)
-# # print(selected_results)
-# #
-# # final_result = N.create_cooc_mat(selected_results)
-# # print(final_result)
-# # print(final_result['Linkage'][0])
-#
-# # N = Processing(tag_filter)
-# # df, s_df = N.cooc()
-# # print(df['Linkage'][:20].tolist())
-# # print(list(df['Weight'][:20]))
-#

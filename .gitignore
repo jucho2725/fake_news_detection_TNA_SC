@@ -179,3 +179,9 @@ $RECYCLE.BIN/
 # floobits files
 .floo
 .flooignore
+<<<<<<< HEAD
+=======
+
+# ignore BigDAS data
+BigDAS_data/
+>>>>>>> upstream/master
