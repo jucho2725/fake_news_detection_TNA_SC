@@ -182,3 +182,6 @@ $RECYCLE.BIN/
 
 # ignore BigDAS data
 BigDAS_data/
+
+# ignore TiCNN data
+data_1031_preprocessed.tsv
