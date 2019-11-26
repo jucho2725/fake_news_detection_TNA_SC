@@ -7,7 +7,7 @@ import nltk
 import pandas as pd
 
 import argparse
-import tqdm
+from tqdm import tqdm
 
 """
 BEFORE YOU START please make sure downloading data in nltk package.
@@ -31,14 +31,14 @@ def define_argparser():
 
 def get_doc_filenames(document_path):
     """
-    파일 이름 받기
+    파일 이름 받기 - txt 형식 일 경우
     """
     return [os.path.join(document_path, each)
             for each in os.listdir(document_path)]
 
 def get_cooc_filenames(document_path):
     """
-    파일 이름 받기
+    파일 이름 받기 - 만들어진 cooc 파일들을 불러옴
     """
     return [os.path.join(document_path[:], each)
             for each in os.listdir(document_path[:])]
@@ -57,9 +57,9 @@ def main(args):
 
     if args.data_type == 'csv' or 'tsv':
         if args.data_type == 'csv':
-            df = pd.read_csv(filepath, index_col=0) # path 가 현재는 dir, 근데
+            df = pd.read_csv(filepath) # path 가 현재는 dir, 근데
         else:
-            df = pd.read_csv(filepath, sep='\t', index_col=0)
+            df = pd.read_csv(filepath, sep='\t',)
 
         with tqdm(total = len(df['text'])) as pbar:
             for idx, text in enumerate(df['text']):
@@ -101,8 +101,6 @@ def main(args):
                 pbar.update(1)
                 cooc_model.cooc(filepath=doc_path, savepath="{0}/{1}.csv".format(path_true, idx))
 
-        # TEXT 형식으로 넣으면 feature 클래스가 정확히 돌아가지 않음. 나중에 다시 작업해야할듯
-
         print(" ")
         print("Creation Finished.. Starts new job")
         print(" ")
@@ -112,7 +110,7 @@ def main(args):
         cooc_t_list = get_cooc_filenames(document_path=path_true)
         cooc_path_list = cooc_f_list + cooc_t_list
 
-        feature_model = Feature(doc_path_list=cooc_path_list, dataframe=df) # init - 그래프 만들고 tfidf.csv 불러옴
+        feature_model = Feature(doc_path_list=cooc_path_list, dataframe=df)
 
         print("Make all features and load all to dataframe ")
         df = feature_model.make_df_from_dataset()
