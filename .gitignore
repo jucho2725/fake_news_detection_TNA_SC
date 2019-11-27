@@ -184,4 +184,9 @@ $RECYCLE.BIN/
 
 # ignore BigDAS data
 BigDAS_data/
+<<<<<<< HEAD
 >>>>>>> upstream/master
+=======
+
+# ignore TiCNN data
+>>>>>>> 5424dcb1a5fc5d46e68cf38bda370b1f929b02a8

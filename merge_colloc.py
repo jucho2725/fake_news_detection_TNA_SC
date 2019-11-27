@@ -1,3 +1,10 @@
+"""
+re-arragne Co-Occurrence matrix
+
+Nov 26th, 2019
+author: Hanseok, Oh
+
+"""
 import ast
 
 def strToList(df):

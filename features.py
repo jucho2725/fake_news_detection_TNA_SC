@@ -5,14 +5,13 @@ June 2nd, 2019
 author: Jin Uk, Cho
 """
 
-import sklearn
+
 import networkx as nx
 import pandas as pd
 import numpy as np
+import tqdm
 
-from network_visualization import Graph
-from reweight import Reweight
-
+from network import Graph
 
 # 척도 계산하기
 class Measure():
@@ -114,14 +113,14 @@ class Measure():
         com_var = np.var(np.array(common_neighbors))
         degree_sequence = sorted([d for n, d in self.graph.degree()], reverse=True)
         core_count = len([i for i in degree_sequence if i > np.quantile(degree_sequence, 0.75)])
-        com_mean, com_var, core_count
+        return com_mean, com_var, core_count
 
 class Feature():
-    def __init__(self, doc_path_list):
+    def __init__(self, doc_path_list, dataframe):
         self.doc_filenames = doc_path_list
-        # self.df_tfidf = pd.read_csv('data/tfidf.csv', index_col=0)
+        self.df = dataframe
 
-    def cal_tfidf(self):
+    def cal_tfidf(self): # TO DO
         tfidf_mean = np.mean(self.df_tfidf['Tfidf'])
         tfidf_var = np.var(self.df_tfidf['Tfidf'])
         return tfidf_mean, tfidf_var
@@ -143,44 +142,37 @@ class Feature():
     def make_df(self, doc_path, label):
         net = Graph()
         G, matrix = net.create_graph(doc_path, string_to_list=True)  # 이미 tfidf_reweight.csv 로 된 애들을 만들어놔서 그걸로 시작해야함
-        tfidf_mean, tfidf_var = self.cal_tfidf()
         wt_mean, wt_var = self.cal_edge_weight(matrix)
         edge_num = self.cal_edge_num(matrix)
-        com_mean, com_var, core_count, bet_val = self.cal_net_feature(G)
+        com_mean, com_var, core_count, deg_val, clo_val, bet_val = self.cal_net_feature(G)
 
-
-        feature_df_one = {'tfidf_mean': tfidf_mean,
-                          'tfidf_var': tfidf_var,
-                          'wt_mean': wt_mean,
+        """ tfidf 값 포함 안해둠 """
+        feature_df_one = {'wt_mean': wt_mean,
                           'wt_var': wt_var,
                           'edge_num': edge_num,
                           'com_mean': com_mean,
                           'com_var': com_var,
                           'core_count': core_count,
-                          'betweeness': bet_val,
-                          'label': label, 'index': doc_path[-20:-4],
+                          'deg_centrality': deg_val,
+                          'clo_centrality': clo_val,
+                          'bet_centrality': bet_val,
+                          'label': label
                           }
 
         return feature_df_one
 
-    def make_df_from_dataset(self):
-        idx_list = []
+    def make_df_from_dataset(self): # self.df 선언해놓은 dataframe 하나씩 넘어가면서, label 이 1 이면 label을
         row_list = []
-        for doc_path in self.doc_filenames[:2]:
-            idx_list.append(doc_path[-20:-4]) # title of article
-            row_list.append(self.make_df(doc_path, label=0))
-        for doc_path in self.doc_filenames[2:]:
-            idx_list.append(doc_path[-20:-4])  # title of article
-            row_list.append(self.make_df(doc_path, label=1))
 
-        feature_df = pd.DataFrame(row_list, columns=row_list[0].keys(), index=idx_list)
+        with tqdm(total=len(self.df['text']), desc='creating dataframe from cooc files') as pbar:
+            for idx, doc_path in enumerate(self.doc_filenames):
+                pbar.update(1)
+                if self.df.loc[idx, 'label'] == 1:
+                    row_list.append(self.make_df(doc_path, label=1))
+                else:
+                    row_list.append(self.make_df(doc_path, label=0))
+
+        feature_df = pd.DataFrame(row_list, columns=row_list[0].keys())
 
         return feature_df
 
-
-''' TO DO 
-
-Longest path 구현? 
-or Bidirectional 그래프로 바꿀까 
-
-'''
