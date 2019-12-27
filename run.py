@@ -61,11 +61,18 @@ def main(args):
         else:
             df = pd.read_csv(filepath, sep='\t',)
 
-        with tqdm(total = len(df['text'])) as pbar:
-            for idx, text in enumerate(df['text']):
-                pbar.update(1)
-                cooc_model.cooc(text=text, savepath="{0}/{1}.csv".format(coocpath, idx))
+        with tqdm(total = len(df['text'])) as pbar: #change index here
+            no_processed_idx = []
+            f =open("no_processed_index.txt",'a',encoding='utf-8')
+            f.write("Not process index:\n")
+            for idx, text in enumerate(df['text']): #change index here
+                try:
+                    pbar.update(1)
+                    cooc_model.cooc(text=text, savepath="{0}/{1}.csv".format(coocpath, idx))
+                except Exception as e:
+                    f.write("{}, index:{}\n".format(e,idx))
 
+        f.close()
         print(" ")
         print("Creation Finished.. Starts new job")
         print(" ")
