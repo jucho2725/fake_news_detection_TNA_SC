@@ -70,7 +70,7 @@ def main(args):
                     pbar.update(1)
                     cooc_model.cooc(text=text, savepath="{0}/{1}.csv".format(coocpath, idx))
                 except Exception as e:
-                    f.write("{}, index:{}".format(e,idx))
+                    f.write("{}, index:{}\n".format(e,idx))
 
         f.close()
         print(" ")
