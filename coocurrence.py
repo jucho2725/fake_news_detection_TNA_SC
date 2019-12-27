@@ -257,18 +257,9 @@ class Processing():
         return sel_sents, cooc_mat
 
 
-<<<<<<< HEAD
-if __name__=='__main__':
-    p = Processing()
-    df = pd.read_csv('sample_data/data_1031_preprocessed.tsv',sep='\t')
-    # print("df check:",df.head())
-    for index,temp in enumerate(df.iloc[:20,0]):
-        p.cooc(text= temp,savepath='{}.csv'.format(index))
-=======
 # if __name__=='__main__':
 #     p = Processing()
 #     df = pd.read_csv('sample_data/data_1031_preprocessed.tsv',sep='\t')
 #     # print("df check:",df.head())
 #     for index,temp in enumerate(df.iloc[:20,0]):
 #         p.cooc(text= temp,savepath='{}.csv'.format(index))
->>>>>>> 5424dcb1a5fc5d46e68cf38bda370b1f929b02a8
