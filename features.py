@@ -169,7 +169,8 @@ class Feature():
         with tqdm(total=len(self.doc_filenames[:10]), desc='creating dataframe from cooc files') as pbar:
             for idx, doc_path in enumerate(self.doc_filenames[:10]):
                 pbar.update(1)
-                if self.df.loc[idx, 'label'] == 1:
+                # if self.df.loc[idx, 'label'] == 1:
+                if int(doc_path.split('/')[-1][:-4]) >= 7775
                     row_list.append(self.make_df(doc_path, label=1))
                 else:
                     row_list.append(self.make_df(doc_path, label=0))
