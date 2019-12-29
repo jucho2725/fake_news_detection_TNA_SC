@@ -47,8 +47,8 @@ def main(args):
     print("Get cooc of each doc from corpus")
     cooc_model = Processing()
 
-    savepath = os.getcwd()
-    coocpath = savepath + '/cooc/'
+    savepath = "sample_data/"
+    coocpath = savepath + 'cooc/'
 
     filepath = args.filepath
 
@@ -61,16 +61,16 @@ def main(args):
         else:
             df = pd.read_csv(filepath, sep='\t',)
 
-        with tqdm(total = len(df['text'])) as pbar: #change index here
+        with tqdm(total = len(df['text'][18087:18200])) as pbar: #change index here
             no_processed_idx = []
-            f =open("no_processed_index.txt",'a',encoding='utf-8')
+            f =open(savepath+"no_processed_index.txt",'a',encoding='utf-8')
             f.write("Not process index:\n")
-            for idx, text in enumerate(df['text']): #change index here
+            for idx, text in enumerate(df['text'][18087:18200]): #change index here
                 try:
                     pbar.update(1)
-                    cooc_model.cooc(text=text, savepath="{0}/{1}.csv".format(coocpath, idx))
+                    cooc_model.cooc(text=text, savepath="{0}/{1}.csv".format(coocpath, idx+18087))
                 except Exception as e:
-                    f.write("{}, index:{}\n".format(e,idx))
+                    f.write("{}, index:{}\n".format(e,idx+18087))
 
         f.close()
         print(" ")
@@ -128,3 +128,4 @@ def main(args):
 if __name__ == '__main__':
     args = define_argparser()
     main(args)
+
