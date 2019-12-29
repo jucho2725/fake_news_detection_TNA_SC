@@ -52,6 +52,8 @@ class Measure():
         :return: (float)  grouped value
         """
         X = 0
+        if len(list_deg) == 0:
+            return 0
         max_val = max(list_deg)
         g = len(list_deg)
         if g == 1 or g == 2 or g == 3:
