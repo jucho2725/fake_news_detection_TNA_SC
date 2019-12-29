@@ -16,8 +16,7 @@ import pandas as pd
 # import plotly.plotly as py
 # from plotly.graph_objs import *
 
-from coocurrence import Processing
-
+import ast
 
 class Graph:
     """
@@ -28,11 +27,20 @@ class Graph:
     def __init__(self):
         self.G = nx.Graph()
 
+    def strToList(self, df):
+        '''
+        desc : Changing df['linkage'] data type from string to list.
+        '''
+        try:
+            df['Linkage'] = [ast.literal_eval(str) for str in df.loc[:, 'Linkage']]
+        except:
+            pass
+        return df
 
     def string_to_list(self, df):
         temp = df.loc[:, 'Linkage'].astype(str).str.split("'").str
-        first = temp.get(1).get_values()
-        second = temp.get(3).get_values()
+        first = temp.get(1).array
+        second = temp.get(3).array
         linkage = pd.Series(list(zip(first, second)))
         df['Linkage'] = linkage
         return df
@@ -45,23 +53,26 @@ class Graph:
         """
         # MST(Minum Spanning Tree)-based graph
         # create edge
-        matrix = pd.read_csv(doc_path, index_col=0)
+
+        matrix = pd.read_csv(doc_path)
         if string_to_list:
-            matrix = self.string_to_list(matrix)
+            matrix = self.strToList(matrix)
         else:
             pass
 
+        matrix = matrix.loc[:, ('Linkage', 'Weight')]
+
+
         for i in range(len(matrix)):
-            # print('{0} is the number'.format(len(matrix)))
-            # print(matrix['Linkage'][i])
             w1 = matrix.loc[i, 'Linkage'][0]
             w2 = matrix.loc[i, 'Linkage'][1]
             count = matrix.loc[i, 'Weight']
+            self.G.add_edge(w1, w2, weight=count)
             # i += 1
             # if i > NETWORK_MAX: # 노드 갯수 제어
             #     break
 
-            self.G.add_edge(w1, w2, weight=count)
+
 
         # create MST model
         self.T = nx.minimum_spanning_tree(self.G)

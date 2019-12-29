@@ -9,7 +9,7 @@ author: Jin Uk, Cho
 import networkx as nx
 import pandas as pd
 import numpy as np
-import tqdm
+from tqdm import tqdm
 
 from network import Graph
 
@@ -27,8 +27,8 @@ class Measure():
         deg_cent = nx.algorithms.degree_centrality(g)
         clo_cent = nx.algorithms.closeness_centrality(g)
         bet_cent = nx.algorithms.betweenness_centrality(g)
-        eig_cent = nx.algorithms.eigenvector_centrality_numpy(g)
-        info_cent = nx.algorithms.information_centrality(g)
+        # eig_cent = nx.algorithms.eigenvector_centrality_numpy(g)
+        # info_cent = nx.algorithms.information_centrality(g)
 
 
         list_deg = [k for k in deg_cent.values()]
@@ -117,6 +117,7 @@ class Measure():
 
 class Feature():
     def __init__(self, doc_path_list, dataframe):
+        # print("hello", doc_path_list)
         self.doc_filenames = doc_path_list
         self.df = dataframe
 
@@ -167,6 +168,7 @@ class Feature():
         with tqdm(total=len(self.df['text']), desc='creating dataframe from cooc files') as pbar:
             for idx, doc_path in enumerate(self.doc_filenames):
                 pbar.update(1)
+                print("doc path ", doc_path)
                 if self.df.loc[idx, 'label'] == 1:
                     row_list.append(self.make_df(doc_path, label=1))
                 else:
