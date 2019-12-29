@@ -157,7 +157,8 @@ class Feature():
                           'deg_centrality': deg_val,
                           'clo_centrality': clo_val,
                           'bet_centrality': bet_val,
-                          'label': label
+                          'label': label,
+                          'index': doc_path.split('/')[-1][:-4]
                           }
 
         return feature_df_one
@@ -165,10 +166,9 @@ class Feature():
     def make_df_from_dataset(self): # self.df 선언해놓은 dataframe 하나씩 넘어가면서, label 이 1 이면 label을
         row_list = []
 
-        with tqdm(total=len(self.df['text']), desc='creating dataframe from cooc files') as pbar:
-            for idx, doc_path in enumerate(self.doc_filenames):
+        with tqdm(total=len(self.doc_filenames[:10]), desc='creating dataframe from cooc files') as pbar:
+            for idx, doc_path in enumerate(self.doc_filenames[:10]):
                 pbar.update(1)
-                print("doc path ", doc_path)
                 if self.df.loc[idx, 'label'] == 1:
                     row_list.append(self.make_df(doc_path, label=1))
                 else:
