@@ -51,13 +51,13 @@ class Measure():
         Cd = Summation(Max - i th value) / (g-2)(g-1)
         :return: (float)  grouped value
         """
-        X = 0
-        if len(list_deg) == 0:
+        if len(list_deg) <= 3:
             return 0
+        X = 0
+
         max_val = max(list_deg)
         g = len(list_deg)
-        if g == 1 or g == 2 or g == 3:
-            return 0
+
         gg = (g - 2) * (g - 1)
 
         # print('maximum value of degree cetrality is : {0}'.format(max_val))
@@ -73,11 +73,12 @@ class Measure():
         Cd = Summation(Max - i th value) / ((g-2)(g-1)/(2g-3))
         :return: (float)  grouped value
         """
+        if len(list_clo) <= 3:
+            return 0
         X = 0
         max_val = max(list_clo)
         g = len(list_clo)
-        if g == 1 or g == 2 or g == 3:
-            return 0
+
         gg = ((g - 2) * (g - 1)) / (2 * g - 3)
 
         for i in list_clo:
@@ -92,11 +93,12 @@ class Measure():
         Cd = Summation(Max - i th value) / ((g-2)^2(g-1)/2)
         :return: (float)  grouped value
         """
+        if len(list_bet) <= 3:
+            return 0
         X = 0
         max_val = max(list_bet)
         g = len(list_bet)
-        if g == 1 or g == 2 or g == 3:
-            return 0
+
         gg = (pow((g - 2), 2) * (g - 1)) / (2)
 
         for i in list_bet:
