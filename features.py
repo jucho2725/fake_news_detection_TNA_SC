@@ -13,6 +13,8 @@ from tqdm import tqdm
 
 from network import Graph
 
+eps = 1e-8
+
 # 척도 계산하기
 class Measure():
     def __init__(self, graph):
@@ -52,7 +54,10 @@ class Measure():
         X = 0
         max_val = max(list_deg)
         g = len(list_deg)
+        if g == 1 or g == 2 or g == 3:
+            return 0
         gg = (g - 2) * (g - 1)
+
         # print('maximum value of degree cetrality is : {0}'.format(max_val))
         for i in list_deg:
             tmp = max_val - i
@@ -69,7 +74,10 @@ class Measure():
         X = 0
         max_val = max(list_clo)
         g = len(list_clo)
+        if g == 1 or g == 2 or g == 3:
+            return 0
         gg = ((g - 2) * (g - 1)) / (2 * g - 3)
+
         for i in list_clo:
             tmp = max_val - i
             X += tmp
@@ -85,7 +93,10 @@ class Measure():
         X = 0
         max_val = max(list_bet)
         g = len(list_bet)
+        if g == 1 or g == 2 or g == 3:
+            return 0
         gg = (pow((g - 2), 2) * (g - 1)) / (2)
+
         for i in list_bet:
             tmp = max_val - i
             X += tmp
